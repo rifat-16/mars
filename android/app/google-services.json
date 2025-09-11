@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "346571920317",
+    "project_id": "mars-272dc",
+    "storage_bucket": "mars-272dc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:346571920317:android:a1e87dd6b21dc3d5aef8d4",
+        "android_client_info": {
+          "package_name": "com.mars.mars"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvZm8i2JzSvZXQwE-SdE_oLLA-EFoC5eU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
