@@ -1,45 +1,57 @@
 import 'package:flutter/material.dart';
 
 class ActionButton extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
   const ActionButton({
     super.key,
     required this.title,
     required this.icon,
-    this.onTap,
+    required this.onTap,
   });
-
-  final String title;
-  final IconData icon;
-
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-          child: GestureDetector(
-            onTap: onTap,
-            child: Stack(
-                children:[Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  child: Column(
-                      children: [
-                        Icon(icon,
-                          color: Colors.green,
-                          size: 20,
-                        ),
-                        Text(title,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ]
-                  ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(2, 2),
                 ),
-                ]
+              ],
             ),
-          )
-      );
+            child: Icon(icon, color: Colors.green, size: 28),
+          ),
+          const SizedBox(height: 6),
+          SizedBox(
+            width: 70,
+            child: Text(
+              title.trim(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

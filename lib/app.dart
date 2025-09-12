@@ -6,8 +6,10 @@ import 'features/auth/otp_verify_screen.dart';
 import 'features/auth/set_new_password_screen.dart';
 import 'features/auth/signup_screen.dart';
 import 'features/home/home_screen.dart';
-import 'features/inventory/add_medicine_screen.dart';
-import 'features/inventory/medicine_screen.dart';
+import 'features/inventory/inventory_screen.dart';
+import 'features/medicine/add_medicine_screen.dart';
+import 'features/medicine/medicine_screen.dart';
+import 'features/orders/orders_screen.dart';
 
 class Mars extends StatelessWidget {
   const Mars({super.key});
@@ -26,6 +28,9 @@ class Mars extends StatelessWidget {
         '/home': (context) => HomeScreen(),
         '/medicine': (context) => MedicineScreen(),
         '/addMedicine': (context) => AddMedicineScreen(),
+        '/orders': (context) => OrdersScreen(),
+        '/inventory': (context) => InventoryScreen(),
+
       },
       debugShowCheckedModeBanner: false,
       theme: buildThemeData(),
