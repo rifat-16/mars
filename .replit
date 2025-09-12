@@ -1,4 +1,4 @@
-modules = ["web", "swift-5.8", "dart-3.8"]
+modules = ["web", "swift-5.8", "dart-3.8", "nodejs-20"]
 [agent]
 expertMode = true
 
@@ -37,3 +37,8 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "npm i -g serve@14 && serve -s build/web -l ${PORT:-5000}"]
+build = ["flutter", "build", "web", "--release"]
