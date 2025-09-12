@@ -5,7 +5,7 @@ import 'features/auth/login_screen.dart';
 import 'features/auth/otp_verify_screen.dart';
 import 'features/auth/set_new_password_screen.dart';
 import 'features/auth/signup_screen.dart';
-import 'features/home//home_screen.dart';
+import 'features/home/home_screen.dart';
 import 'features/inventory/add_medicine_screen.dart';
 import 'features/inventory/medicine_screen.dart';
 
