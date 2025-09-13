@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ActionButton(
                   title: 'Dashboard',
                   icon: Icons.dashboard,
-                  onTap: () {},
+                  onTap: _navigateToDashboardScreen,
                 ),
               ],
             ),
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ActionButton(
                   title: ' Employee ',
                   icon: Icons.person,
-                  onTap: () {},
+                  onTap: _navigateToEmployeeScreen,
                 ),
                 ActionButton(
                   title: ' Inventory ',
@@ -80,9 +80,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 ActionButton(
                   title: ' Production ',
                   icon: Icons.production_quantity_limits,
-                  onTap: () {},
+                  onTap: _navigateToProductionScreen,
                 ),
+                ActionButton(
+                    title: 'Invoice',
+                    icon: Icons.add,
+                    onTap: _navigateToAddOrderScreen,
+                )
               ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(width: 40,),
+
+              ]
             ),
 
             const SizedBox(height: 20),
@@ -125,7 +138,24 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.pushNamed(context, '/orders');
   }
 
+  void _navigateToDashboardScreen() {
+    Navigator.pushNamed(context, '/dashboard');
+  }
+
   void _navigateToInventoryScreen() {
     Navigator.pushNamed(context, '/inventory');
   }
+
+  void _navigateToProductionScreen() {
+    Navigator.pushNamed(context, '/addProduction');
+  }
+
+  void _navigateToEmployeeScreen() {
+    Navigator.pushNamed(context, '/employee');
+  }
+
+  void _navigateToAddOrderScreen() {
+    Navigator.pushNamed(context, '/createOrder');
+  }
+
 }

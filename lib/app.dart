@@ -5,11 +5,16 @@ import 'features/auth/login_screen.dart';
 import 'features/auth/otp_verify_screen.dart';
 import 'features/auth/set_new_password_screen.dart';
 import 'features/auth/signup_screen.dart';
+import 'features/home/dashboard_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/inventory/add_production_screen.dart';
 import 'features/inventory/inventory_screen.dart';
 import 'features/medicine/add_medicine_screen.dart';
 import 'features/medicine/medicine_screen.dart';
+import 'features/orders/create_order_screen.dart';
 import 'features/orders/orders_screen.dart';
+import 'features/user/add_new_employee_screen.dart';
+import 'features/user/employee_screen.dart';
 
 class Mars extends StatelessWidget {
   const Mars({super.key});
@@ -26,10 +31,16 @@ class Mars extends StatelessWidget {
         '/otpVerify': (context) => const OtpVerifyScreen(),
         '/setNewPassword': (context) => const SetNewPasswordScreen(),
         '/home': (context) => HomeScreen(),
+        '/dashboard': (context) => DashboardScreen(),
         '/medicine': (context) => MedicineScreen(),
         '/addMedicine': (context) => AddMedicineScreen(),
         '/orders': (context) => OrdersScreen(),
+        '/createOrder': (context) => CreateOrderScreen(),
         '/inventory': (context) => InventoryScreen(),
+        '/addProduction': (context) => AddProductionScreen(),
+        '/employee': (context) => EmployeeListScreen(),
+        '/addEmployee': (context) => AddEmployeeScreen(onSave: (Map<String, String> p1) { },),
+
 
       },
       debugShowCheckedModeBanner: false,
