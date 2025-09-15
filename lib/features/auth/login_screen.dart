@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -135,10 +136,28 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.pushNamed(context, '/signup');
   }
 
-  void _onTapLoginButton() {
+  Future<void> _onTapLoginButton() async {
     if (_formKey.currentState!.validate()) {
       // TODO: Replace with API call / Dashboard navigation
-      Navigator.pushReplacementNamed(context, '/home');
+      try{
+        UserCredential userCredential =
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailTEController.text.trim(),
+          password: _passwordTEController.text.trim(),
+        );
+        // if success then navigate to home screen
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+          }
+      } on FirebaseAuthException catch (e) {
+        // ❌ Error handle
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message ?? 'Login failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

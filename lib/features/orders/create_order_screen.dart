@@ -11,7 +11,12 @@ class CreateOrderScreen extends StatefulWidget {
 
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
   // Sample products
-  final List<String> products = ['Paracetamol', 'Aspirin', 'Vitamin C', 'Ibuprofen'];
+  final List<String> products = [
+    'Paracetamol',
+    'Aspirin',
+    'Vitamin C',
+    'Ibuprofen',
+  ];
 
   // List of selected products with quantity
   List<Map<String, dynamic>> orderItems = [
@@ -74,13 +79,18 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               itemCount: orderItems.length,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Row(
                     children: [
                       // Product dropdown
                       Expanded(
                         flex: 3,
                         child: DropdownButtonFormField<String>(
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green
+                          ),
                           value: orderItems[index]['product'],
                           hint: Text('Select Product'),
                           items: products.map((product) {
@@ -101,15 +111,22 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       Expanded(
                         flex: 1,
                         child: TextFormField(
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green
+                          ),
                           keyboardType: TextInputType.number,
-                          initialValue: orderItems[index]['quantity'].toString(),
+                          initialValue: orderItems[index]['quantity']
+                              .toString(),
                           decoration: InputDecoration(
                             labelText: 'Qty',
                             border: OutlineInputBorder(),
                           ),
                           onChanged: (value) {
                             setState(() {
-                              orderItems[index]['quantity'] = int.tryParse(value) ?? 1;
+                              orderItems[index]['quantity'] =
+                                  int.tryParse(value) ?? 1;
                             });
                           },
                         ),
@@ -144,20 +161,22 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Total Amount: ',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
+                Text(
+                  'Total Amount: ',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
                 ),
                 // Calculate and display total amount here
-                Text('1000',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
+                Text(
+                  '1000',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
                 ),
               ],
             ),

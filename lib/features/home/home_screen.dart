@@ -97,36 +97,76 @@ class _HomeScreenState extends State<HomeScreen> {
 
               ]
             ),
-
-            const SizedBox(height: 20),
-
-            // Example Card for quick overview
-            Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              elevation: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "Today's Summary",
-                      style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 10),
-                    Text("Total Orders: 25"),
-                    Text("Pending Orders: 5"),
-                    Text("Delivered Orders: 18"),
-                    Text("Cancelled Orders: 2"),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                spreadRadius: 2,
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+            child: BottomNavigationBar(
+              currentIndex: 0,
+              onTap: (index) {
+                switch (index) {
+                  case 0:
+                    _navigateToDashboardScreen();
+                    break;
+                  case 1:
+                    _navigateToOrdersScreen();
+                    break;
+                  case 2:
+                    _navigateToProfileScreen();
+                    break;
+                }
+              },
+              backgroundColor: Colors.white,
+              elevation: 0,
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: Colors.green,
+              unselectedItemColor: Colors.grey,
+              selectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 12,
+              ),
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  activeIcon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.shopping_cart_outlined),
+                  activeIcon: Icon(Icons.shopping_cart),
+                  label: 'Orders',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+              ],
+            ),
+          ),
+        )
     );
   }
 
@@ -140,6 +180,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _navigateToDashboardScreen() {
     Navigator.pushNamed(context, '/dashboard');
+  }
+
+  void _navigateToProfileScreen() {
+    Navigator.pushNamed(context, '/profile');
   }
 
   void _navigateToInventoryScreen() {

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -16,6 +18,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _firstNameTEController = TextEditingController();
   final _lastNameTEController = TextEditingController();
   final _phoneNumberTEController = TextEditingController();
+  final _addressTEController = TextEditingController();
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -100,7 +103,19 @@ class _SignupScreenState extends State<SignupScreen> {
                   },
                 ),
                 const SizedBox(height: 10),
-
+                // Address
+                TextFormField(
+                  controller: _addressTEController,
+                  decoration: const InputDecoration(
+                    hintText: 'Address',
+                    labelText: 'Address',
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) return 'Enter address';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 10),
                 // Password
                 TextFormField(
                   controller: _passwordTEController,
@@ -200,17 +215,43 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  void _onTapSignUpButton() {
+  Future<void> _onTapSignUpButton() async {
     if (_formKey.currentState!.validate()) {
       // TODO: Firebase / API call
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sign Up Successful'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Future.delayed(const Duration(seconds: 3), () {
-        Navigator.pushReplacementNamed(context, '/LoginScreen');
-      });
+      try{
+        // 1️⃣ Firebase Auth - create user
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+          email: _emailTEController.text.trim(),
+          password: _passwordTEController.text.trim(),
+        );
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid).set(
+          {
+            'first_name': _firstNameTEController.text.trim(),
+            'last_name': _lastNameTEController.text.trim(),
+            'email': _emailTEController.text.trim(),
+            'phone': _phoneNumberTEController.text.trim(),
+            'address': _addressTEController.text.trim(),
+            'created_at': FieldValue.serverTimestamp(),
+          },
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sign Up Successful'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Future.delayed(const Duration(seconds: 3), () {
+          Navigator.pushReplacementNamed(context, '/LoginScreen');
+        });
+      } on FirebaseAuthException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? 'Sign Up Failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

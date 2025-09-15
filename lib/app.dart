@@ -7,6 +7,7 @@ import 'features/auth/set_new_password_screen.dart';
 import 'features/auth/signup_screen.dart';
 import 'features/home/dashboard_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/home/profile_screen.dart';
 import 'features/inventory/add_production_screen.dart';
 import 'features/inventory/inventory_screen.dart';
 import 'features/medicine/add_medicine_screen.dart';
@@ -22,7 +23,7 @@ class Mars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: '/home',
+      initialRoute: '/SplashScreen',
       routes: {
         '/SplashScreen': (context) => const SplashScreen(),
         '/LoginScreen': (context) => const LoginScreen(),
@@ -31,6 +32,7 @@ class Mars extends StatelessWidget {
         '/otpVerify': (context) => const OtpVerifyScreen(),
         '/setNewPassword': (context) => const SetNewPasswordScreen(),
         '/home': (context) => HomeScreen(),
+        '/profile': (context) => ProfileScreen(),
         '/dashboard': (context) => DashboardScreen(),
         '/medicine': (context) => MedicineScreen(),
         '/addMedicine': (context) => AddMedicineScreen(),
