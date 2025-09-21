@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mars/widgets/main_app_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddEmployeeScreen extends StatefulWidget {
-  final Function(Map<String, String>) onSave;
-
-  const AddEmployeeScreen({super.key, required this.onSave});
+  const AddEmployeeScreen({super.key});
 
   @override
   State<AddEmployeeScreen> createState() => _AddEmployeeScreenState();
@@ -12,7 +11,6 @@ class AddEmployeeScreen extends StatefulWidget {
 
 class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final Map<String, String> _employeeData = {
     'name': '',
     'position': '',
@@ -23,34 +21,72 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   };
 
   bool _showPassword = false;
+  bool _loading = false;
 
-  void _saveEmployee() {
+  void _saveEmployee() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      widget.onSave(_employeeData);
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Employee added')));
+
+      setState(() => _loading = true);
+
+      try {
+        // 1️⃣ Create user in Firebase Authentication
+        UserCredential userCred = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+            email: _employeeData['email']!,
+            password: _employeeData['password']!);
+
+        // 2️⃣ Save user info in Firestore
+        await FirebaseFirestore.instance
+            .collection('employees')
+            .doc(userCred.user!.uid)
+            .set({
+          'name': _employeeData['name'],
+          'position': _employeeData['position'],
+          'email': _employeeData['email'],
+          'phone': _employeeData['phone'],
+          'location': _employeeData['location'],
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Employee added successfully!')),
+        );
+
+        Navigator.pop(context);
+      } on FirebaseAuthException catch (e) {
+        String msg = 'Something went wrong';
+        if (e.code == 'email-already-in-use') {
+          msg = 'Email already in use';
+        } else if (e.code == 'weak-password') {
+          msg = 'Password should be at least 6 characters';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      } finally {
+        setState(() => _loading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MainAppBar(title: 'Add Employee', icon: Icons.person_add),
-      body: SingleChildScrollView(
+      appBar: AppBar(title: const Text('Add Employee'), backgroundColor: Colors.blue),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Card(
           elevation: 4,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
                 children: [
-                  // Name
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Name', prefixIcon: Icon(Icons.person)),
@@ -59,8 +95,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                     onSaved: (val) => _employeeData['name'] = val ?? '',
                   ),
                   const SizedBox(height: 12),
-
-                  // Position
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Position', prefixIcon: Icon(Icons.work)),
@@ -69,8 +103,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                     onSaved: (val) => _employeeData['position'] = val ?? '',
                   ),
                   const SizedBox(height: 12),
-
-                  // Email
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Email', prefixIcon: Icon(Icons.email)),
@@ -83,8 +115,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                     onSaved: (val) => _employeeData['email'] = val ?? '',
                   ),
                   const SizedBox(height: 12),
-
-                  // Phone
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Phone', prefixIcon: Icon(Icons.phone)),
@@ -94,8 +124,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                     onSaved: (val) => _employeeData['phone'] = val ?? '',
                   ),
                   const SizedBox(height: 12),
-
-                  // Password
                   TextFormField(
                     decoration: InputDecoration(
                       labelText: 'Password',
@@ -104,9 +132,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                         icon: Icon(_showPassword
                             ? Icons.visibility_off
                             : Icons.visibility),
-                        onPressed: () {
-                          setState(() => _showPassword = !_showPassword);
-                        },
+                        onPressed: () => setState(() => _showPassword = !_showPassword),
                       ),
                     ),
                     obscureText: !_showPassword,
@@ -115,8 +141,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                     onSaved: (val) => _employeeData['password'] = val ?? '',
                   ),
                   const SizedBox(height: 12),
-
-                  // Location
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Location', prefixIcon: Icon(Icons.location_on)),
@@ -125,17 +149,16 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                     onSaved: (val) => _employeeData['location'] = val ?? '',
                   ),
                   const SizedBox(height: 24),
-
-                  // Save Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.save),
                       label: const Text('Save Employee'),
                       style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12))),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
                       onPressed: _saveEmployee,
                     ),
                   ),

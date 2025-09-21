@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mars/widgets/main_app_bar.dart';
-import 'product_details_screen.dart'; // নতুন screen
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'product_details_screen.dart';
 
 class MedicineScreen extends StatefulWidget {
   const MedicineScreen({super.key});
@@ -13,27 +13,17 @@ class _MedicineScreenState extends State<MedicineScreen> {
   String selectedCategory = 'All';
   List<String> categories = ['All', 'Syrup', 'Tablet', 'Capsule'];
 
-  List<Map<String, dynamic>> medicines = List.generate(10, (index) => {
-    "name": "Product ${index + 1}",
-    "category": ["Syrup", "Tablet", "Capsule"][index % 3],
-    "description": "This is a description of product ${index + 1}",
-    "tp": 10.0 + index,
-    "mrp": 20.0 + index,
-  });
-
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredMedicines = selectedCategory == 'All'
-        ? medicines
-        : medicines.where((med) => med["category"] == selectedCategory).toList();
-
     return Scaffold(
-      appBar: MainAppBar(title: 'Medicine Catalog', icon: Icons.medical_services),
+      appBar: AppBar(
+        title: const Text('Medicine Catalog'),
+        backgroundColor: Colors.green,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Categories
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -60,36 +50,63 @@ class _MedicineScreenState extends State<MedicineScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Medicine List
             Expanded(
-              child: filteredMedicines.isEmpty
-                  ? const Center(child: Text("No products found"))
-                  : ListView.builder(
-                itemCount: filteredMedicines.length,
-                itemBuilder: (context, index) {
-                  final med = filteredMedicines[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      leading: const Icon(Icons.medical_services, color: Colors.green),
-                      title: Text(med["name"]),
-                      subtitle: Text('Category: ${med["category"]}'),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProductDetailsScreen(product: med),
-                          ),
-                        );
-                      },
-                    ),
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('medicines')
+                    .orderBy('createdAt', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text("Error: ${snapshot.error}"));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(child: Text("No products found"));
+                  }
+
+                  final filteredDocs = selectedCategory == 'All'
+                      ? snapshot.data!.docs
+                      : snapshot.data!.docs
+                      .where((doc) => doc['category'] == selectedCategory)
+                      .toList();
+
+                  if (filteredDocs.isEmpty) {
+                    return const Center(child: Text("No products found for this category"));
+                  }
+
+                  return ListView.builder(
+                    itemCount: filteredDocs.length,
+                    itemBuilder: (context, index) {
+                      final doc = filteredDocs[index];
+                      final med = doc.data()! as Map<String, dynamic>;
+                      final productId = doc.id;
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(12),
+                          leading: const Icon(Icons.medical_services, color: Colors.green),
+                          title: Text(med["name"]),
+                          subtitle: Text('Category: ${med["category"]}'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ProductDetailsScreen(productId: productId),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
                   );
                 },
               ),

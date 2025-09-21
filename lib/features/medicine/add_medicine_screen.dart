@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mars/widgets/main_app_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'product_details_screen.dart';
 
 class AddMedicineScreen extends StatefulWidget {
   const AddMedicineScreen({super.key});
@@ -11,11 +12,13 @@ class AddMedicineScreen extends StatefulWidget {
 class _AddMedicineScreenState extends State<AddMedicineScreen> {
   final _formKey = GlobalKey<FormState>();
   String name = '';
+  String subtitle = '';
   String category = 'Syrup';
+  String dosage = '';
+  String efficiency = '';
   String description = '';
   double tpPrice = 0.0;
   double mrpPrice = 0.0;
-  int quantity = 0;
 
   List<String> categories = ['Syrup', 'Tablet', 'Capsule'];
 
@@ -34,14 +37,16 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MainAppBar(title: 'Add Medicine', icon: Icons.medical_services),
+      appBar: AppBar(
+        title: const Text('Add Medicine'),
+        backgroundColor: Colors.green,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
-              // Medicine Name
               TextFormField(
                 decoration: _inputDecoration('Medicine Name'),
                 validator: (value) =>
@@ -49,28 +54,37 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 onSaved: (value) => name = value!,
               ),
               const SizedBox(height: 16),
-
-              // Category
+              TextFormField(
+                decoration: _inputDecoration('Sub Title'),
+                onSaved: (value) => subtitle = value!,
+              ),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 decoration: _inputDecoration('Category'),
                 value: category,
                 items: categories
-                    .map((cat) =>
-                    DropdownMenuItem(value: cat, child: Text(cat)))
+                    .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
                     .toList(),
                 onChanged: (value) => setState(() => category = value!),
               ),
               const SizedBox(height: 16),
-
-              // Description
+              TextFormField(
+                decoration: _inputDecoration('Dosage'),
+                onSaved: (value) => dosage = value!,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                decoration: _inputDecoration('Efficiency'),
+                maxLines: 5,
+                onSaved: (value) => efficiency = value!,
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 decoration: _inputDecoration('Description'),
-                maxLines: 3,
+                maxLines: 5,
                 onSaved: (value) => description = value!,
               ),
               const SizedBox(height: 16),
-
-              // TP Price & MRP Price Row
               Row(
                 children: [
                   Expanded(
@@ -78,9 +92,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                       decoration: _inputDecoration('TP Price'),
                       keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) =>
-                      value!.isEmpty ? 'Enter TP Price' : null,
-                      onSaved: (value) => tpPrice = double.parse(value!),
+                      onSaved: (value) => tpPrice = double.tryParse(value!) ?? 0,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -89,26 +101,12 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                       decoration: _inputDecoration('MRP Price'),
                       keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) =>
-                      value!.isEmpty ? 'Enter MRP Price' : null,
-                      onSaved: (value) => mrpPrice = double.parse(value!),
+                      onSaved: (value) => mrpPrice = double.tryParse(value!) ?? 0,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Quantity
-              TextFormField(
-                decoration: _inputDecoration('Quantity'),
-                keyboardType: TextInputType.number,
-                validator: (value) =>
-                value!.isEmpty ? 'Enter Quantity' : null,
-                onSaved: (value) => quantity = int.parse(value!),
-              ),
-              const SizedBox(height: 24),
-
-              // Save Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -133,17 +131,40 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
     );
   }
 
-  void _saveMedicine() {
+  void _saveMedicine() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // TODO: Save to Firebase / Local DB
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Medicine saved successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
+
+      Map<String, dynamic> product = {
+        "name": name,
+        "subtitle": subtitle,
+        "category": category,
+        "dosage": dosage,
+        "efficiency": efficiency,
+        "description": description,
+        "tp": tpPrice,
+        "mrp": mrpPrice,
+        "createdAt": FieldValue.serverTimestamp(),
+      };
+
+      try {
+        DocumentReference docRef = await FirebaseFirestore.instance
+            .collection("medicines")
+            .add(product);
+
+        String productId = docRef.id;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailsScreen(productId: productId),
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to save: $e")),
+        );
+      }
     }
   }
 }

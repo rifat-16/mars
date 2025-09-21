@@ -23,7 +23,7 @@ class Mars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: '/SplashScreen',
+      initialRoute: '/home',
       routes: {
         '/SplashScreen': (context) => const SplashScreen(),
         '/LoginScreen': (context) => const LoginScreen(),
@@ -41,7 +41,8 @@ class Mars extends StatelessWidget {
         '/inventory': (context) => InventoryScreen(),
         '/addProduction': (context) => AddProductionScreen(),
         '/employee': (context) => EmployeeListScreen(),
-        '/addEmployee': (context) => AddEmployeeScreen(onSave: (Map<String, String> p1) { },),
+        '/addEmployee': (context) => const AddEmployeeScreen(),
+
 
 
       },

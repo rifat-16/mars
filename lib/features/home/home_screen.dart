@@ -47,7 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ActionButton(
                   title: ' Medicine ',
                   icon: Icons.medical_services,
-                  onTap: _navigateToAddMedicineScreen,
+                  onTap: _navigateToMedicineScreen,
+                ),
+                ActionButton(
+                    title: 'Add Medicine',
+                    icon: Icons.add,
+                    onTap: _navigateToAddMedicineScreen,
                 ),
                 ActionButton(
                   title: '   Orders   ',
@@ -61,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
 
             // Buttons Row 2
             Row(
@@ -170,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _navigateToAddMedicineScreen() {
+  void _navigateToMedicineScreen() {
     Navigator.pushNamed(context, '/medicine');
   }
 
@@ -200,6 +205,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _navigateToAddOrderScreen() {
     Navigator.pushNamed(context, '/createOrder');
+  }
+
+  void _navigateToAddMedicineScreen() {
+    Navigator.pushNamed(context, '/addMedicine');
   }
 
 }
