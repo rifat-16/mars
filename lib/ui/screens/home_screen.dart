@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mars/widgets/action_button.dart';
-import 'package:mars/widgets/main_app_bar.dart';
+import '../widgets/action_button.dart';
+import '../widgets/main_app_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

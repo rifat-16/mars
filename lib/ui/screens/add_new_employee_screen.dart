@@ -45,6 +45,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
           'position': _employeeData['position'],
           'email': _employeeData['email'],
           'phone': _employeeData['phone'],
+          'password': _employeeData['password'],
           'location': _employeeData['location'],
           'createdAt': FieldValue.serverTimestamp(),
         });

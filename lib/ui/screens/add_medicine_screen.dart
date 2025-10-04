@@ -5,12 +5,22 @@ import 'product_details_screen.dart';
 class AddMedicineScreen extends StatefulWidget {
   const AddMedicineScreen({super.key});
 
+
   @override
   State<AddMedicineScreen> createState() => _AddMedicineScreenState();
 }
 
 class _AddMedicineScreenState extends State<AddMedicineScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameTEController = TextEditingController();
+  final _subtitleTEController = TextEditingController();
+  final _categoryTEController = TextEditingController();
+  final _dosageTEController = TextEditingController();
+  final _efficiencyTEController = TextEditingController();
+  final _descriptionTEController = TextEditingController();
+  final _tpPriceTEController = TextEditingController();
+  final _mrpPriceTEController = TextEditingController();
+
   String name = '';
   String subtitle = '';
   String category = 'Syrup';
@@ -21,6 +31,8 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   double mrpPrice = 0.0;
 
   List<String> categories = ['Syrup', 'Tablet', 'Capsule'];
+
+  bool _isSaving = false;
 
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
@@ -48,6 +60,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
           child: Column(
             children: [
               TextFormField(
+                controller: _nameTEController,
                 decoration: _inputDecoration('Medicine Name'),
                 validator: (value) =>
                 value!.isEmpty ? 'Please enter medicine name' : null,
@@ -55,11 +68,13 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
               ),
               const SizedBox(height: 16),
               TextFormField(
+                controller: _subtitleTEController,
                 decoration: _inputDecoration('Sub Title'),
                 onSaved: (value) => subtitle = value!,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 decoration: _inputDecoration('Category'),
                 value: category,
                 items: categories
@@ -69,17 +84,20 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
               ),
               const SizedBox(height: 16),
               TextFormField(
+                controller: _dosageTEController,
                 decoration: _inputDecoration('Dosage'),
                 onSaved: (value) => dosage = value!,
               ),
               const SizedBox(height: 16),
               TextFormField(
+                controller: _efficiencyTEController,
                 decoration: _inputDecoration('Efficiency'),
                 maxLines: 5,
                 onSaved: (value) => efficiency = value!,
               ),
               const SizedBox(height: 16),
               TextFormField(
+                controller: _descriptionTEController,
                 decoration: _inputDecoration('Description'),
                 maxLines: 5,
                 onSaved: (value) => description = value!,
@@ -89,6 +107,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 children: [
                   Expanded(
                     child: TextFormField(
+                      controller: _tpPriceTEController,
                       decoration: _inputDecoration('TP Price'),
                       keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
@@ -98,6 +117,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
+                      controller: _mrpPriceTEController,
                       decoration: _inputDecoration('MRP Price'),
                       keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
@@ -118,10 +138,19 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                         borderRadius: BorderRadius.circular(12)),
                     elevation: 4,
                   ),
-                  child: const Text(
-                    'Save Medicine',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  child: _isSaving
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Save Medicine',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                 ),
               )
             ],
@@ -133,6 +162,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
 
   void _saveMedicine() async {
     if (_formKey.currentState!.validate()) {
+      setState(() => _isSaving = true);
       _formKey.currentState!.save();
 
       Map<String, dynamic> product = {
@@ -153,18 +183,49 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
             .add(product);
 
         String productId = docRef.id;
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProductDetailsScreen(productId: productId),
+        _clearForm();
+        // Update the document with the generated ID
+        await docRef.update({"id": productId});
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            duration: Duration(seconds: 1),
+              backgroundColor: Colors.green,
+              content: Text("Medicine saved successfully",
+            style: TextStyle(color: Colors.white),
+          )
           ),
         );
       } catch (e) {
+        setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Failed to save: $e")),
         );
       }
     }
+  }
+
+  void _clearForm() {
+    _nameTEController.clear();
+    _subtitleTEController.clear();
+    _categoryTEController.clear();
+    _dosageTEController.clear();
+    _efficiencyTEController.clear();
+    _descriptionTEController.clear();
+    _tpPriceTEController.clear();
+    _mrpPriceTEController.clear();
+  }
+
+  @override
+  void dispose() {
+    _nameTEController.dispose();
+    _subtitleTEController.dispose();
+    _categoryTEController.dispose();
+    _dosageTEController.dispose();
+    _efficiencyTEController.dispose();
+    _descriptionTEController.dispose();
+    _tpPriceTEController.dispose();
+    _mrpPriceTEController.dispose();
+    super.dispose();
   }
 }

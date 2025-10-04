@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordTEController = TextEditingController();
 
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -87,9 +88,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  ElevatedButton(
-                    onPressed: _onTapLoginButton,
-                    child: const Text('Login'),
+                  Visibility(
+                    visible: _isLoading == false,
+                    child: ElevatedButton(
+                      onPressed: _onTapLoginButton,
+                      child: const Text('Login'),
+                    ),
+                    replacement: const CircularProgressIndicator(),
                   ),
                   const SizedBox(height: 20),
 
@@ -138,6 +143,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _onTapLoginButton() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = false;
+      });
       // TODO: Replace with API call / Dashboard navigation
       try{
         UserCredential userCredential =
@@ -147,8 +155,17 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         // if success then navigate to home screen
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
-          }
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.pushNamed(context, '/home');
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              duration: Duration(seconds: 1),
+              content: Text('Login Successful'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } on FirebaseAuthException catch (e) {
         // ❌ Error handle
         ScaffoldMessenger.of(context).showSnackBar(
@@ -157,6 +174,10 @@ class _LoginScreenState extends State<LoginScreen> {
             backgroundColor: Colors.red,
           ),
         );
+      }finally{
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }

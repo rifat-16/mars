@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mars/widgets/main_app_bar.dart';
+import '../widgets/main_app_bar.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
