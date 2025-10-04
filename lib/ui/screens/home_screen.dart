@@ -59,11 +59,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icons.shopping_cart,
                   onTap: _navigateToOrdersScreen,
                 ),
-                ActionButton(
-                  title: 'Dashboard',
-                  icon: Icons.dashboard,
-                  onTap: _navigateToDashboardScreen,
-                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -83,25 +78,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: _navigateToInventoryScreen,
                 ),
                 ActionButton(
-                  title: ' Production ',
+                  title: 'Invoice',
+                  icon: Icons.add,
+                  onTap: _navigateToAddOrderScreen,
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Add more buttons as needed
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ActionButton(
+                  title: 'Production Details',
+                  icon: Icons.production_quantity_limits,
+                  onTap: _navigateToProductionDetailsScreen,
+                ),
+                ActionButton(
+                  title: ' Add Production ',
                   icon: Icons.production_quantity_limits,
                   onTap: _navigateToProductionScreen,
                 ),
                 ActionButton(
-                    title: 'Invoice',
-                    icon: Icons.add,
-                    onTap: _navigateToAddOrderScreen,
-                )
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                SizedBox(width: 40,),
-
+                  title: 'Dashboard',
+                  icon: Icons.dashboard,
+                  onTap: _navigateToDashboardScreen,
+                ),
               ]
-            ),
+            )
           ],
         ),
       ),
@@ -209,6 +213,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _navigateToAddMedicineScreen() {
     Navigator.pushNamed(context, '/addMedicine');
+  }
+  void _navigateToProductionDetailsScreen() {
+    Navigator.pushNamed(context, '/productionDetails');
   }
 
 }

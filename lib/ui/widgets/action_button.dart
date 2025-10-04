@@ -21,8 +21,8 @@ class ActionButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
               color: Colors.green[50],
               borderRadius: BorderRadius.circular(16),
@@ -38,7 +38,7 @@ class ActionButton extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           SizedBox(
-            width: 70,
+            width: 80,
             child: Text(
               title.trim(),
               textAlign: TextAlign.center,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mars/ui/screens/production_details_list_screen.dart';
 import 'package:mars/ui/screens/splash_screen.dart';
 import 'ui/screens/forgot_password_screen.dart';
 import 'ui/screens/login_screen.dart';
@@ -42,6 +43,7 @@ class Mars extends StatelessWidget {
         '/addProduction': (context) => AddProductionScreen(),
         '/employee': (context) => EmployeeListScreen(),
         '/addEmployee': (context) => const AddEmployeeScreen(),
+        '/productionDetails': (context) => ProductionDetailsListScreen(),
 
 
       },

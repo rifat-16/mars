@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mars/ui/widgets/main_app_bar.dart';
@@ -13,8 +14,11 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _productNameController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
-  final TextEditingController _notesController = TextEditingController();
   DateTime? _selectedDate;
+  bool _isSaving = false;
+
+  String? _selectedCategory;
+  final List<String> _categories = ['Syrup', 'Tablet', 'Capsule'];
 
   void _pickDate() async {
     DateTime? picked = await showDatePicker(
@@ -30,30 +34,6 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
     }
   }
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      String productName = _productNameController.text.trim();
-      int quantity = int.parse(_quantityController.text.trim());
-      String notes = _notesController.text.trim();
-      DateTime date = _selectedDate ?? DateTime.now();
-
-      // Here you can send data to Firebase / API / Local DB
-      print("Product: $productName");
-      print("Quantity: $quantity");
-      print("Date: ${DateFormat('yyyy-MM-dd').format(date)}");
-      print("Notes: $notes");
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Production added successfully!')),
-      );
-
-      // Clear form
-      _formKey.currentState!.reset();
-      setState(() {
-        _selectedDate = null;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +53,27 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
                 ),
                 validator: (value) =>
                 value == null || value.isEmpty ? 'Enter product name' : null,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                items: _categories
+                    .map((cat) => DropdownMenuItem(
+                          value: cat,
+                          child: Text(cat),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Select Category',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Please select a category' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -102,27 +103,73 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+              Visibility(
+                visible: _isSaving == false,
+                replacement: const Center(
+                  child: CircularProgressIndicator(),
                 ),
-                child: const Text('Add Production', style: TextStyle(fontSize: 16)),
+                child: ElevatedButton(
+                  onPressed: _onTabAddProduction,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('Add Production', style: TextStyle(fontSize: 16)),
+                ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+ Future<void> _onTabAddProduction() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isSaving = true);
+      _formKey.currentState!.save();
+      // TODO: Firebase / API call
+      Map<String, dynamic> production = {
+        'createdAt': DateTime.now(),
+        'productName': _productNameController.text,
+        'category': _selectedCategory,
+        'quantity': int.parse(_quantityController.text),
+        'date': _selectedDate,
+      };
+      try {
+        DocumentReference docRef = await FirebaseFirestore.instance
+            .collection('productions')
+            .add(production);
+        String productionId = docRef.id;
+        _clearForm();
+        await docRef.update({'id': productionId});
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Production added successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 1),
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add production: $e'),
+          ),
+        );
+      }
+    }
+ }
+
+ void _clearForm() {
+    _productNameController.clear();
+    _quantityController.clear();
+  }
+
+  @override
+  void dispose() {
+    _productNameController.dispose();
+    _quantityController.dispose();
+    super.dispose();
   }
 }
