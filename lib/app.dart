@@ -44,7 +44,6 @@ class Mars extends StatelessWidget {
         '/addEmployee': (context) => const AddEmployeeScreen(),
 
 
-
       },
       debugShowCheckedModeBanner: false,
       theme: buildThemeData(),

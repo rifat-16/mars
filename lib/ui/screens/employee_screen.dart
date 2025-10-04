@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/main_app_bar.dart';
 import 'add_new_employee_screen.dart';
+import 'edit_employee_screen.dart';
 
 class EmployeeListScreen extends StatefulWidget {
   const EmployeeListScreen({super.key});
@@ -11,15 +13,11 @@ class EmployeeListScreen extends StatefulWidget {
 
 class _EmployeeListScreenState extends State<EmployeeListScreen> {
   Map<String, bool> _expandedMap = {};
-  Map<String, bool> _passwordVisibleMap = {};
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Employee List'),
-        backgroundColor: Colors.blue,
-      ),
+      appBar: MainAppBar(title: 'Employee List', icon: Icons.people_alt),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('employees')
@@ -188,12 +186,12 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         IconButton(
-                                          onPressed: () {},
+                                          onPressed: () => _editEmployee(emp.id),
                                           icon: const Icon(Icons.edit,
                                             color: Colors.green,),
                                         ),
                                         IconButton(
-                                          onPressed: () {},
+                                          onPressed: () => _deleteEmployee(emp.id),
                                           icon: const Icon(Icons.delete,
                                             color: Colors.red,
                                           ),
@@ -221,6 +219,34 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
           );
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+
+  void _deleteEmployee(String employeeId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('employees')
+          .doc(employeeId)
+          .delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Employee deleted successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+  } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete employee: $e')),
+      );
+    }
+  }
+
+  void _editEmployee(String employeeId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditEmployeeScreen(employeeId: employeeId),
       ),
     );
   }
