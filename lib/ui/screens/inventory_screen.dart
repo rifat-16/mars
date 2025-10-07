@@ -18,9 +18,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
   List<Map<String, dynamic>> products = [];
   bool _isLoading = true;
 
-  Future<void> _fetchProducts() async {
-    final snapshot = await FirebaseFirestore.instance.collection('productions').get();
-    final data = snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+  Future<void> _fetchInventory() async {
+    final snapshot =
+        await FirebaseFirestore.instance.collection('inventory').get();
+    final data =
+        snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
     setState(() {
       products = data;
       _isLoading = false;
@@ -30,7 +32,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchProducts();
+    _fetchInventory();
   }
 
   @override

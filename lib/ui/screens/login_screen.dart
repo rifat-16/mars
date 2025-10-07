@@ -1,6 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../auth/auth_controller.dart';
+import '../../auth/role_controller.dart';
+import '../../models/user_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -144,37 +150,76 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _onTapLoginButton() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = false;
+        _isLoading = true;
       });
-      // TODO: Replace with API call / Dashboard navigation
-      try{
+
+      try {
         UserCredential userCredential =
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailTEController.text.trim(),
           password: _passwordTEController.text.trim(),
         );
-        // if success then navigate to home screen
-        if (mounted) {
-          Future.delayed(const Duration(seconds: 2), () {
-            Navigator.pushNamed(context, '/home');
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              duration: Duration(seconds: 1),
-              content: Text('Login Successful'),
-              backgroundColor: Colors.green,
-            ),
+
+        final user = userCredential.user;
+        final token = await user?.getIdToken();
+
+        if (user != null && token != null) {
+          // 🔹 Fetch extra user info (position, etc.) from Firestore
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+          if (!userDoc.exists) {
+            throw Exception('User data not found in Firestore');
+          }
+
+          final userData = userDoc.data()!;
+
+          // 🔹 Create UserModel
+          final userModel = UserModel(
+            uid: user.uid,
+            email: user.email ?? '',
+            first_name: userData['first_name'] ?? '',
+            last_name: userData['last_name'] ?? '',
+            phone: userData['phone'] ?? '',
+            position: userData['position'] ?? '', // 👈 Important
+            address: userData['address'] ?? '',
           );
+
+          // 🔹 Save to local storage
+          await AuthController.saveUserData(userModel, token);
+
+          // 🔹 Also save role in SharedPreferences (optional redundancy)
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('first_name', userData['first_name'] ?? '');
+          await prefs.setString('last_name', userData['last_name'] ?? '');
+          await prefs.setString('address', userData['address'] ?? '');
+          await prefs.setString('phone', userData['phone'] ?? '');
+          await prefs.setString('position', userData['position'] ?? '');
+
+          // 🔹 Navigate to home screen
+
+
+          if (mounted) {
+            Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                duration: Duration(seconds: 1),
+                content: Text('Login Successful'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         }
       } on FirebaseAuthException catch (e) {
-        // ❌ Error handle
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.message ?? 'Login failed'),
             backgroundColor: Colors.red,
           ),
         );
-      }finally{
+      } finally {
         setState(() {
           _isLoading = false;
         });

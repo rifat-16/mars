@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/action_button.dart';
 import '../widgets/main_app_bar.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,6 +12,22 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String? userRole;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserRole();
+  }
+
+  Future<void> _loadUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userRole = prefs.getString('position');
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,14 +68,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: _navigateToMedicineScreen,
                 ),
                 ActionButton(
-                    title: 'Add Medicine',
-                    icon: Icons.add,
-                    onTap: _navigateToAddMedicineScreen,
-                ),
-                ActionButton(
                   title: '   Orders   ',
                   icon: Icons.shopping_cart,
                   onTap: _navigateToOrdersScreen,
+                ),
+                ActionButton(
+                  title: 'Dashboard',
+                  icon: Icons.dashboard,
+                  onTap: _navigateToDashboardScreen,
                 ),
               ],
             ),
@@ -67,16 +85,19 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                if(userRole == 'Owner')
                 ActionButton(
                   title: ' Employee ',
                   icon: Icons.person,
                   onTap: _navigateToEmployeeScreen,
                 ),
+                if(userRole == 'Owner' || userRole == 'Manager')
                 ActionButton(
                   title: ' Inventory ',
                   icon: Icons.inventory_2,
                   onTap: _navigateToInventoryScreen,
                 ),
+                if(userRole == 'Owner' || userRole == 'Manager')
                 ActionButton(
                   title: 'Invoice',
                   icon: Icons.add,
@@ -89,20 +110,23 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                if(userRole == 'Owner' || userRole == 'Manager')
                 ActionButton(
                   title: 'Production Details',
                   icon: Icons.production_quantity_limits,
                   onTap: _navigateToProductionDetailsScreen,
                 ),
+                if(userRole == 'Owner' || userRole == 'Manager')
                 ActionButton(
                   title: ' Add Production ',
                   icon: Icons.production_quantity_limits,
                   onTap: _navigateToProductionScreen,
                 ),
+                if(userRole == 'Owner')
                 ActionButton(
-                  title: 'Dashboard',
-                  icon: Icons.dashboard,
-                  onTap: _navigateToDashboardScreen,
+                  title: 'Add Medicine',
+                  icon: Icons.add,
+                  onTap: _navigateToAddMedicineScreen,
                 ),
               ]
             )

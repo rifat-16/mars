@@ -22,6 +22,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -176,9 +177,13 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 20),
 
                 // Signup Button
-                ElevatedButton(
-                  onPressed: _onTapSignUpButton,
-                  child: const Text('Sign Up'),
+                Visibility(
+                  visible: _isLoading == false,
+                  replacement: const CircularProgressIndicator(),
+                  child: ElevatedButton(
+                    onPressed: _onTapSignUpButton,
+                    child: const Text('Sign Up'),
+                  ),
                 ),
                 const SizedBox(height: 20),
 
@@ -219,6 +224,9 @@ class _SignupScreenState extends State<SignupScreen> {
     if (_formKey.currentState!.validate()) {
       // TODO: Firebase / API call
       try{
+        setState(() {
+          _isLoading = true;
+        });
         // 1️⃣ Firebase Auth - create user
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(
@@ -237,6 +245,9 @@ class _SignupScreenState extends State<SignupScreen> {
             'created_at': FieldValue.serverTimestamp(),
           },
         );
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Sign Up Successful'),
             backgroundColor: Colors.green,

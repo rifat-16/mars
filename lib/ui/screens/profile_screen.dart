@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../auth/auth_controller.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -23,34 +27,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _getProfileData() async {
-    // TODO: Replace with API call to get profile data
-    try{
-      final user = FirebaseAuth.instance.currentUser!.uid;
-      final profileData = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user)
-          .get();
-      if(profileData.exists){
-        final data = profileData.data();
-        if(data != null){
-          setState(() {
-            _firstName = data['first_name'];
-            _lastName = data['last_name'];
-            _email = data['email'];
-            _phone = data['phone'];
-            _address = data['address'];
-          });
-        }
-      }
-    } catch (e) {
-      // ❌ Error handle
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _firstName = prefs.getString('first_name') ?? '';
+      _lastName = prefs.getString('last_name') ?? '';
+      _email = prefs.getString('email') ?? '';
+      _phone = prefs.getString('phone') ?? '';
+      _address = prefs.getString('address') ?? '';
+    });
+
   }
 
   @override
@@ -119,9 +104,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  _buildProfileTile(Icons.phone, "Phone", _phone),
-                  _buildProfileTile(Icons.location_on, "Address", _address),
-                  _buildProfileTile(Icons.logout, "Logout", "Sign out from the app"),
+                  _buildProfileTile(Icons.phone, "Phone", _phone, onTap: null),
+                  _buildProfileTile(Icons.location_on, "Address", _address, onTap: null),
+                  _buildProfileTile(
+                    Icons.logout,
+                    "Logout",
+                    "Sign out from the app",
+                    onTap: () async {
+                      try {
+                        await FirebaseAuth.instance.signOut();
+                        await AuthController.logout();
+                        // ignore: use_build_context_synchronously
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (context) =>  LoginScreen()),
+                          (route) => false,
+                        );
+
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Logout failed: ${e.toString()}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
@@ -131,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileTile(IconData ?icon, String title, String subtitle) {
+  Widget _buildProfileTile(IconData? icon, String title, String subtitle, {VoidCallback? onTap}) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       elevation: 0,
@@ -140,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: Icon(icon, color: Colors.green),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle),
-        onTap: () {},
+        onTap: onTap,
       ),
     );
   }

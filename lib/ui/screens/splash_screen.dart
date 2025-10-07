@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mars/ui/screens/login_screen.dart';
+
+import '../../auth/auth_wrapper.dart';
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -9,16 +11,15 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
-    _moveToNextScreen();
-  }
-
-  Future<void> _moveToNextScreen() async {
-    await Future.delayed(Duration(seconds: 3));
-    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LoginScreen()), (route) => false);
+    Future.delayed(const Duration(seconds: 2), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AuthWrapper()),
+      );
+    });
   }
 
   @override

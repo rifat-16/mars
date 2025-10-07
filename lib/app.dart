@@ -1,6 +1,7 @@
+import 'package:Mars/ui/screens/orders_details_screen.dart';
+import 'package:Mars/ui/screens/production_details_list_screen.dart';
+import 'package:Mars/ui/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:mars/ui/screens/production_details_list_screen.dart';
-import 'package:mars/ui/screens/splash_screen.dart';
 import 'ui/screens/forgot_password_screen.dart';
 import 'ui/screens/login_screen.dart';
 import 'ui/screens/otp_verify_screen.dart';
@@ -24,9 +25,9 @@ class Mars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: '/home',
+      title: 'Mars',
+      home: const SplashScreen(),
       routes: {
-        '/SplashScreen': (context) => const SplashScreen(),
         '/LoginScreen': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/forgotPassword': (context) => const ForgotPasswordScreen(),
@@ -38,94 +39,92 @@ class Mars extends StatelessWidget {
         '/medicine': (context) => MedicineScreen(),
         '/addMedicine': (context) => AddMedicineScreen(),
         '/orders': (context) => OrdersScreen(),
+        '/ordersDetails': (context) => OrdersDetailsScreen(orderId: '',),
         '/createOrder': (context) => CreateOrderScreen(),
         '/inventory': (context) => InventoryScreen(),
         '/addProduction': (context) => AddProductionScreen(),
         '/employee': (context) => EmployeeListScreen(),
         '/addEmployee': (context) => const AddEmployeeScreen(),
         '/productionDetails': (context) => ProductionDetailsListScreen(),
-
-
       },
       debugShowCheckedModeBanner: false,
       theme: buildThemeData(),
-
     );
   }
 
   ThemeData buildThemeData() {
     return ThemeData(
-      useMaterial3: true,
-      colorSchemeSeed: Colors.green,
-      brightness: Brightness.light,
-      fontFamily: 'Poppins',
-      textTheme: TextTheme(
-        titleLarge: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: Colors.green,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Colors.green,
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        hintStyle: TextStyle(
-          color: Colors.grey,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-        labelStyle: TextStyle(
-          color: Colors.green,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-        errorStyle: TextStyle(
-          color: Colors.red,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.green,
+        brightness: Brightness.light,
+        fontFamily: 'Poppins',
+        textTheme: TextTheme(
+          titleLarge: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
             color: Colors.green,
           ),
-          ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
+          titleMedium: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
             color: Colors.green,
-          ),
-          ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.green,
-          ),
-          ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(
-            color: Colors.red,
           ),
         ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
-          foregroundColor: Colors.white,
-          textStyle: TextStyle(
-            fontSize: 18,
+        inputDecorationTheme: InputDecorationTheme(
+          hintStyle: TextStyle(
+            color: Colors.grey,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+          labelStyle: TextStyle(
+            color: Colors.green,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
-          minimumSize: Size(double.infinity, 50),
+          errorStyle: TextStyle(
+            color: Colors.red,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(
+              color: Colors.green,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(
+              color: Colors.green,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(
+              color: Colors.green,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(
+              color: Colors.red,
+            ),
+          ),
         ),
-      )
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            textStyle: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            minimumSize: Size(double.infinity, 50),
+          ),
+        )
     );
   }
 }

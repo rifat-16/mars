@@ -57,7 +57,13 @@ class _ProductionDetailsListScreenState extends State<ProductionDetailsListScree
                         ? DateFormat('dd MMM yyyy').format((item['date'] as Timestamp).toDate())
                         : 'No Date',
                   ),
-                  trailing: Text(item['quantity'].toString()),
+                  trailing: Text(item['quantity'].toString() + ' pis',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                      fontSize: 15,
+                    ),
+                  ),
                 );
               },
             ),

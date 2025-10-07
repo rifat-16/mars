@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mars/ui/widgets/main_app_bar.dart';
+
+import '../widgets/main_app_bar.dart';
+
 
 class AddProductionScreen extends StatefulWidget {
   const AddProductionScreen({super.key});
@@ -34,6 +36,36 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
     }
   }
 
+  Map<String, double> products = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProducts();
+  }
+
+  Future<void> _fetchProducts() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('medicines')
+          .get();
+
+      setState(() {
+        products = Map.fromEntries(snapshot.docs.map((doc) {
+          final data = doc.data();
+          // Handle different possible field names
+          final name = data['name'] ??
+              data['medicineName'] ??
+              data['productName'] ??
+              '';
+          final tpPrice = data['TP'] ?? data['tp'] ?? 0;
+          return MapEntry(name.toString(), (tpPrice is num) ? tpPrice.toDouble() : 0.0);
+        }).where((entry) => entry.key.isNotEmpty));
+      });
+    } catch (e) {
+      print('Error fetching medicines: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,23 +77,42 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              TextFormField(
-                controller: _productNameController,
+              DropdownButtonFormField<String>(
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+                value: _productNameController.text.isNotEmpty
+                    ? _productNameController.text
+                    : null,
+                hint: const Text('Select Product'),
+                items: products.keys.map((product) {
+                  return DropdownMenuItem<String>(
+                    value: product,
+                    child: Text(product),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _productNameController.text = value ?? '';
+                  });
+                },
                 decoration: const InputDecoration(
-                  labelText: 'Product Name',
+                  labelText: 'Select Product',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) =>
-                value == null || value.isEmpty ? 'Enter product name' : null,
+                value == null || value.isEmpty ? 'Please select a product' : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 items: _categories
                     .map((cat) => DropdownMenuItem(
-                          value: cat,
-                          child: Text(cat),
-                        ))
+                  value: cat,
+                  child: Text(cat),
+                ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
@@ -73,7 +124,7 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Please select a category' : null,
+                value == null || value.isEmpty ? 'Please select a category' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -124,25 +175,52 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
     );
   }
 
- Future<void> _onTabAddProduction() async {
+  Future<void> _onTabAddProduction() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isSaving = true);
       _formKey.currentState!.save();
-      // TODO: Firebase / API call
+
+      final firestore = FirebaseFirestore.instance;
+      final inventoryRef = firestore.collection('inventory');
+      final productionsRef = firestore.collection('productions');
+
       Map<String, dynamic> production = {
-        'createdAt': DateTime.now(),
+        'createdAt': FieldValue.serverTimestamp(),
         'productName': _productNameController.text,
         'category': _selectedCategory,
         'quantity': int.parse(_quantityController.text),
         'date': _selectedDate,
       };
+
       try {
-        DocumentReference docRef = await FirebaseFirestore.instance
-            .collection('productions')
-            .add(production);
-        String productionId = docRef.id;
+        // Step 1: Save production record (history)
+        final docRef = await productionsRef.add(production);
+        await docRef.update({'id': docRef.id});
+
+        // Step 2: Update or create in inventory
+        final existing = await inventoryRef
+            .where('productName', isEqualTo: _productNameController.text)
+            .limit(1)
+            .get();
+
+        if (existing.docs.isNotEmpty) {
+          final doc = existing.docs.first;
+          final oldQty = doc['quantity'] ?? 0;
+          final newQty = oldQty + int.parse(_quantityController.text);
+          await inventoryRef.doc(doc.id).update({
+            'quantity': newQty,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        } else {
+          await inventoryRef.add({
+            'productName': _productNameController.text,
+            'category': _selectedCategory,
+            'quantity': int.parse(_quantityController.text),
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+
         _clearForm();
-        await docRef.update({'id': productionId});
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -152,16 +230,15 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
           ),
         );
       } catch (e) {
+        setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add production: $e'),
-          ),
+          SnackBar(content: Text('Failed to add production: $e')),
         );
       }
     }
- }
+  }
 
- void _clearForm() {
+  void _clearForm() {
     _productNameController.clear();
     _quantityController.clear();
   }

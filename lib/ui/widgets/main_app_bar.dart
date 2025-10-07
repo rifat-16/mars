@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final IconData icon;
+  final IconData? tilingIcon;
   final List<Widget>? actions;
   final bool showBackButton;
 
@@ -10,6 +11,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     required this.title,
     required this.icon,
+    this.tilingIcon,
     this.actions,
     this.showBackButton = true, // Home screen হলে false করতে হবে
   });
@@ -48,6 +50,8 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 10),
+          Icon(tilingIcon ?? null, color: Colors.white, size: 28),
         ],
       ),
       actions: actions,
