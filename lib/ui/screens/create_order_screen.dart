@@ -37,6 +37,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     setState(() {
       _userRole = prefs.getString('position') ?? '';
     });
+
+    // Role load er pore check koro
+    if (_userRole != 'Owner' && _userRole != 'Manager') {
+      _loadUserInfo(); // Regular user hole info auto fill
+    }
   }
 
   Future<void> _isOwner() async{
@@ -154,31 +159,35 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<Map<String, String>>(
-                decoration: InputDecoration(
-                  labelText: 'Select Previous Customer',
-                  border: OutlineInputBorder(),
+              // Customer Information Section
+              if (_userRole == 'Owner' || _userRole == 'Manager') ...[
+                DropdownButtonFormField<Map<String, String>>(
+                  decoration: InputDecoration(
+                    labelText: 'Select Previous Customer',
+                    border: OutlineInputBorder(),
+                  ),
+                  isExpanded: true,
+                  value: _selectedCustomer,
+                  items: _previousCustomers.map((customer) {
+                    return DropdownMenuItem<Map<String, String>>(
+                      value: customer,
+                      child: Text('${customer['name']} (${customer['address']})'),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCustomer = value;
+                      if (value != null) {
+                        _customerNameController.text = value['name'] ?? '';
+                        _addressController.text = value['address'] ?? '';
+                        _phoneNumberController.text = value['phone'] ?? '';
+                      }
+                    });
+                  },
+                  hint: const Text('Select Previous Customer'),
                 ),
-                isExpanded: true,
-                value: _selectedCustomer,
-                items: _previousCustomers.map((customer) {
-                  return DropdownMenuItem<Map<String, String>>(
-                    value: customer,
-                    child: Text('${customer['name']} (${customer['address']})'),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCustomer = value;
-                    if (value != null) {
-                      _customerNameController.text = value['name'] ?? '';
-                      _addressController.text = value['address'] ?? '';
-                      _phoneNumberController.text = value['phone'] ?? '';
-                    }
-                  });
-                },
-                hint: const Text('Select Previous Customer'),
-              ),
+                const SizedBox(height: 16),
+              ],
               const SizedBox(height: 16),
               TextFormField(
                 validator: (value) {
