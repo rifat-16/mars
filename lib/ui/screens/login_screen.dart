@@ -164,43 +164,54 @@ class _LoginScreenState extends State<LoginScreen> {
         final token = await user?.getIdToken();
 
         if (user != null && token != null) {
-          // 🔹 Fetch extra user info (position, etc.) from Firestore
-          final userDoc = await FirebaseFirestore.instance
+          DocumentSnapshot? userDoc;
+
+          // 🔹 Try to fetch from 'users' first
+          userDoc = await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
               .get();
+
+          // 🔹 If not found in 'users', try 'employees'
+          if (!userDoc.exists) {
+            userDoc = await FirebaseFirestore.instance
+                .collection('employees')
+                .doc(user.uid)
+                .get();
+          }
 
           if (!userDoc.exists) {
             throw Exception('User data not found in Firestore');
           }
 
-          final userData = userDoc.data()!;
+          final userData = userDoc.data() as Map<String, dynamic>;
 
           // 🔹 Create UserModel
           final userModel = UserModel(
             uid: user.uid,
             email: user.email ?? '',
-            first_name: userData['first_name'] ?? '',
+            first_name: userData['first_name'] ?? userData['name'] ?? '',
             last_name: userData['last_name'] ?? '',
             phone: userData['phone'] ?? '',
-            position: userData['position'] ?? '', // 👈 Important
-            address: userData['address'] ?? '',
+            position: userData['position'] ?? '',
+            address: userData['address'] ?? userData['location'] ?? '',
           );
 
-          // 🔹 Save to local storage
+          // 🔹 Save locally
           await AuthController.saveUserData(userModel, token);
 
-          // 🔹 Also save role in SharedPreferences (optional redundancy)
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('first_name', userData['first_name'] ?? '');
+          await prefs.setString('first_name', userData['first_name'] ?? userData['name'] ?? '');
           await prefs.setString('last_name', userData['last_name'] ?? '');
-          await prefs.setString('address', userData['address'] ?? '');
+          await prefs.setString('address', userData['address'] ?? userData['location'] ?? '');
           await prefs.setString('phone', userData['phone'] ?? '');
           await prefs.setString('position', userData['position'] ?? '');
+          await prefs.setString('uid', user.uid);
+          await prefs.setString('email', user.email ?? '');
 
-          // 🔹 Navigate to home screen
 
 
+          // 🔹 Navigate home
           if (mounted) {
             Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
             ScaffoldMessenger.of(context).showSnackBar(

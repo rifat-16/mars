@@ -1,4 +1,7 @@
+import 'package:Mars/ui/screens/add_pharmacy.dart';
 import 'package:Mars/ui/screens/orders_details_screen.dart';
+import 'package:Mars/ui/screens/pharmacy_details.dart';
+import 'package:Mars/ui/screens/pharmacy_list.dart';
 import 'package:Mars/ui/screens/production_details_list_screen.dart';
 import 'package:Mars/ui/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +49,9 @@ class Mars extends StatelessWidget {
         '/employee': (context) => EmployeeListScreen(),
         '/addEmployee': (context) => const AddEmployeeScreen(),
         '/productionDetails': (context) => ProductionDetailsListScreen(),
+        '/addPharmacy': (context) => AddPharmacy(),
+        '/pharmacyList': (context) => PharmacyList(),
+        '/pharmacyDetails': (context) => PharmacyDetails(),
       },
       debugShowCheckedModeBanner: false,
       theme: buildThemeData(),

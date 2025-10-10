@@ -17,15 +17,32 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   final TextEditingController _phoneNumberController = TextEditingController();
   bool _isSaving = false;
   // Sample products with TP prices
-  Map<String, double> products = {};
+  Map<String, double> _products = {};
+  late String _userRole;
+
 
   @override
   void initState() {
     super.initState();
     _fetchProducts();
-    _loadUserInfo();
+    _loadUserRole();
+    _isOwner();
   }
 
+  Future<void> _loadUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userRole = prefs.getString('position') ?? '';
+    });
+  }
+
+  Future<void> _isOwner() async{
+    if (_userRole != 'Owner' && _userRole != 'Manager'){
+      _loadUserInfo();
+    } else {
+      return;
+    }
+  }
 
   Future<void> _loadUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -46,7 +63,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           .get();
 
       setState(() {
-        products = Map.fromEntries(snapshot.docs.map((doc) {
+        _products = Map.fromEntries(snapshot.docs.map((doc) {
           final data = doc.data();
           // Handle different possible field names
           final name = data['name'] ??
@@ -58,7 +75,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         }).where((entry) => entry.key.isNotEmpty));
       });
     } catch (e) {
-      print('Error fetching medicines: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        )
+      );
     }
   }
 
@@ -72,8 +93,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     for (var item in orderItems) {
       final productName = item['product'];
       final quantity = item['quantity'] ?? 1;
-      if (productName != null && products.containsKey(productName)) {
-        total += products[productName]! * quantity;
+      if (productName != null && _products.containsKey(productName)) {
+        total += _products[productName]! * quantity;
       }
     }
     return total;
@@ -171,11 +192,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                                 fontWeight: FontWeight.bold,
                                 color: Colors.green
                             ),
-                            value: products.containsKey(orderItems[index]['product'])
+                            value: _products.containsKey(orderItems[index]['product'])
                                 ? orderItems[index]['product']
                                 : null,
                             hint: Text('Select Product'),
-                            items: products.keys.map((product) {
+                            items: _products.keys.map((product) {
                               return DropdownMenuItem<String>(
                                 value: product,
                                 child: Text(product),

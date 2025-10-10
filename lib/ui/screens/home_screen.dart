@@ -13,6 +13,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? userRole;
+  String? _firstName;
+
 
   @override
   void initState() {
@@ -24,9 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       userRole = prefs.getString('position');
+      _firstName = prefs.getString('first_name');
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Hi User! Welcome to Mars',
+                    'Hi $_firstName ! Welcome to Mars',
                     style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -128,6 +130,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icons.add,
                   onTap: _navigateToAddMedicineScreen,
                 ),
+              ]
+            ),
+            const SizedBox(height: 20),
+            // Add more buttons as needed
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ActionButton(
+                  title: 'Pharmacy List',
+                  icon: Icons.local_pharmacy,
+                  onTap: _navigateToPharmacyListScreen,
+                ),
+                ActionButton(
+                  title: 'Add Pharmacy',
+                  icon: Icons.add_business,
+                  onTap: _navigateToAddPharmacyScreen,
+                ),
+
               ]
             )
           ],
@@ -240,6 +260,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   void _navigateToProductionDetailsScreen() {
     Navigator.pushNamed(context, '/productionDetails');
+  }
+  void _navigateToPharmacyListScreen() {
+    Navigator.pushNamed(context, '/pharmacyList');
+  }
+  void _navigateToAddPharmacyScreen() {
+    Navigator.pushNamed(context, '/addPharmacy');
   }
 
 }
