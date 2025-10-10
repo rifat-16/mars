@@ -12,7 +12,7 @@ class PharmacyDetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Center(
         child: Container(
           height: 150,
@@ -45,7 +45,7 @@ class PharmacyDetailsCard extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),

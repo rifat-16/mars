@@ -1,7 +1,8 @@
-import 'package:Mars/ui/screens/add_pharmacy.dart';
+import 'package:Mars/ui/screens/add_payment.dart';
+import 'package:Mars/ui/screens/customers_list.dart';
 import 'package:Mars/ui/screens/orders_details_screen.dart';
+import 'package:Mars/ui/screens/payment_received_screen.dart';
 import 'package:Mars/ui/screens/pharmacy_details.dart';
-import 'package:Mars/ui/screens/pharmacy_list.dart';
 import 'package:Mars/ui/screens/production_details_list_screen.dart';
 import 'package:Mars/ui/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ import 'ui/screens/create_order_screen.dart';
 import 'ui/screens/orders_screen.dart';
 import 'ui/screens/add_new_employee_screen.dart';
 import 'ui/screens/employee_screen.dart';
+
 
 class Mars extends StatelessWidget {
   const Mars({super.key});
@@ -49,9 +51,10 @@ class Mars extends StatelessWidget {
         '/employee': (context) => EmployeeListScreen(),
         '/addEmployee': (context) => const AddEmployeeScreen(),
         '/productionDetails': (context) => ProductionDetailsListScreen(),
-        '/addPharmacy': (context) => AddPharmacy(),
         '/pharmacyList': (context) => PharmacyList(),
         '/pharmacyDetails': (context) => PharmacyDetails(),
+        '/paymentReceived': (context) => PaymentReceivedScreen(),
+        '/addPayment': (context) => AddPayment(),
       },
       debugShowCheckedModeBanner: false,
       theme: buildThemeData(),

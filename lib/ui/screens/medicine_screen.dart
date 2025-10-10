@@ -1,3 +1,4 @@
+import 'package:Mars/ui/widgets/main_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'product_details_screen.dart';
@@ -16,10 +17,7 @@ class _MedicineScreenState extends State<MedicineScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Medicine Catalog'),
-        backgroundColor: Colors.green,
-      ),
+      appBar: MainAppBar(title: 'Medicine', icon: Icons.medical_services),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

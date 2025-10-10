@@ -20,6 +20,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   Map<String, double> _products = {};
   late String _userRole;
 
+  List<Map<String, String>> _previousCustomers = [];
+  Map<String, String>? _selectedCustomer;
 
   @override
   void initState() {
@@ -27,6 +29,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     _fetchProducts();
     _loadUserRole();
     _isOwner();
+    _fetchPreviousCustomers();
   }
 
   Future<void> _loadUserRole() async {
@@ -83,6 +86,37 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     }
   }
 
+  Future<void> _fetchPreviousCustomers() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .get();
+
+      Map<String, Map<String, String>> uniqueCustomers = {};
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final phone = data['phoneNumber'] ?? '';
+        if (phone.isNotEmpty && !uniqueCustomers.containsKey(phone)) {
+          uniqueCustomers[phone] = {
+            'name': data['customerName'] ?? '',
+            'address': data['address'] ?? '',
+            'phone': phone,
+          };
+        }
+      }
+
+      setState(() {
+        _previousCustomers = uniqueCustomers.values.toList();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load previous customers: $e'),
+          backgroundColor: Colors.red,
+        )
+      );
+    }
+  }
+
   // List of selected products with quantity
   List<Map<String, dynamic>> orderItems = [
     {'product': null, 'quantity': 1},
@@ -118,6 +152,32 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   fontWeight: FontWeight.bold,
                   color: Colors.green,
                 ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<Map<String, String>>(
+                decoration: InputDecoration(
+                  labelText: 'Select Previous Customer',
+                  border: OutlineInputBorder(),
+                ),
+                isExpanded: true,
+                value: _selectedCustomer,
+                items: _previousCustomers.map((customer) {
+                  return DropdownMenuItem<Map<String, String>>(
+                    value: customer,
+                    child: Text('${customer['name']} (${customer['address']})'),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCustomer = value;
+                    if (value != null) {
+                      _customerNameController.text = value['name'] ?? '';
+                      _addressController.text = value['address'] ?? '';
+                      _phoneNumberController.text = value['phone'] ?? '';
+                    }
+                  });
+                },
+                hint: const Text('Select Previous Customer'),
               ),
               const SizedBox(height: 16),
               TextFormField(

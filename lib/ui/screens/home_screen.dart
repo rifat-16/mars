@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/action_button.dart';
 import '../widgets/main_app_bar.dart';
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -14,7 +13,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String? userRole;
   String? _firstName;
-
 
   @override
   void initState() {
@@ -51,9 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     'Hi $_firstName ! Welcome to Mars',
                     style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
                   ),
                 ),
               ],
@@ -87,24 +86,24 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                if(userRole == 'Owner')
-                ActionButton(
-                  title: ' Employee ',
-                  icon: Icons.person,
-                  onTap: _navigateToEmployeeScreen,
-                ),
-                if(userRole == 'Owner' || userRole == 'Manager')
-                ActionButton(
-                  title: ' Inventory ',
-                  icon: Icons.inventory_2,
-                  onTap: _navigateToInventoryScreen,
-                ),
-                if(userRole == 'Owner' || userRole == 'Manager')
-                ActionButton(
-                  title: 'Invoice',
-                  icon: Icons.add,
-                  onTap: _navigateToAddOrderScreen,
-                ),
+                if (userRole == 'Owner')
+                  ActionButton(
+                    title: ' Employee ',
+                    icon: Icons.person,
+                    onTap: _navigateToEmployeeScreen,
+                  ),
+                if (userRole == 'Owner' || userRole == 'Manager')
+                  ActionButton(
+                    title: ' Inventory ',
+                    icon: Icons.inventory_2,
+                    onTap: _navigateToInventoryScreen,
+                  ),
+                if (userRole == 'Owner' || userRole == 'Manager')
+                  ActionButton(
+                    title: 'Invoice',
+                    icon: Icons.add,
+                    onTap: _navigateToAddOrderScreen,
+                  ),
               ],
             ),
             const SizedBox(height: 20),
@@ -112,114 +111,117 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                if(userRole == 'Owner' || userRole == 'Manager')
-                ActionButton(
-                  title: 'Production Details',
-                  icon: Icons.production_quantity_limits,
-                  onTap: _navigateToProductionDetailsScreen,
-                ),
-                if(userRole == 'Owner' || userRole == 'Manager')
-                ActionButton(
-                  title: ' Add Production ',
-                  icon: Icons.production_quantity_limits,
-                  onTap: _navigateToProductionScreen,
-                ),
-                if(userRole == 'Owner')
-                ActionButton(
-                  title: 'Add Medicine',
-                  icon: Icons.add,
-                  onTap: _navigateToAddMedicineScreen,
-                ),
-              ]
+                if (userRole == 'Owner' || userRole == 'Manager')
+                  ActionButton(
+                    title: 'Production Details',
+                    icon: Icons.production_quantity_limits,
+                    onTap: _navigateToProductionDetailsScreen,
+                  ),
+                if (userRole == 'Owner' || userRole == 'Manager')
+                  ActionButton(
+                    title: ' Add Production ',
+                    icon: Icons.production_quantity_limits,
+                    onTap: _navigateToProductionScreen,
+                  ),
+                if (userRole == 'Owner')
+                  ActionButton(
+                    title: 'Add Medicine',
+                    icon: Icons.add,
+                    onTap: _navigateToAddMedicineScreen,
+                  ),
+              ],
             ),
             const SizedBox(height: 20),
             // Add more buttons as needed
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                if (userRole == 'Owner' || userRole == 'Manager')
+                  ActionButton(
+                    title: 'Customers List',
+                    icon: Icons.local_pharmacy,
+                    onTap: _navigateToPharmacyListScreen,
+                  ),
+                if (userRole == 'Owner')
+                  ActionButton(
+                    title: 'Payment Received',
+                    icon: Icons.payment,
+                    onTap: _navigateToPaymentReceivedScreen,
+                  ),
                 ActionButton(
-                  title: 'Pharmacy List',
-                  icon: Icons.local_pharmacy,
-                  onTap: _navigateToPharmacyListScreen,
+                  title: 'Update coming soon',
+                  icon: Icons.update,
+                  onTap: () {},
                 ),
-                ActionButton(
-                  title: 'Add Pharmacy',
-                  icon: Icons.add_business,
-                  onTap: _navigateToAddPharmacyScreen,
-                ),
-
-              ]
-            )
+              ],
+            ),
           ],
         ),
       ),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              spreadRadius: 2,
+              blurRadius: 10,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                spreadRadius: 2,
-                blurRadius: 10,
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          child: BottomNavigationBar(
+            currentIndex: 0,
+            onTap: (index) {
+              switch (index) {
+                case 0:
+                  break;
+                case 1:
+                  _navigateToOrdersScreen();
+                  break;
+                case 2:
+                  _navigateToProfileScreen();
+                  break;
+              }
+            },
+            backgroundColor: Colors.white,
+            elevation: 0,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: Colors.green,
+            unselectedItemColor: Colors.grey,
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+            unselectedLabelStyle: const TextStyle(fontSize: 12),
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.shopping_cart_outlined),
+                activeIcon: Icon(Icons.shopping_cart),
+                label: 'Orders',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Profile',
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-            child: BottomNavigationBar(
-              currentIndex: 0,
-              onTap: (index) {
-                switch (index) {
-                  case 0:
-                    _navigateToDashboardScreen();
-                    break;
-                  case 1:
-                    _navigateToOrdersScreen();
-                    break;
-                  case 2:
-                    _navigateToProfileScreen();
-                    break;
-                }
-              },
-              backgroundColor: Colors.white,
-              elevation: 0,
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: Colors.green,
-              unselectedItemColor: Colors.grey,
-              selectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 12,
-              ),
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.shopping_cart_outlined),
-                  activeIcon: Icon(Icons.shopping_cart),
-                  label: 'Orders',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Profile',
-                ),
-              ],
-            ),
-          ),
-        )
+        ),
+      ),
     );
   }
 
@@ -258,14 +260,16 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToAddMedicineScreen() {
     Navigator.pushNamed(context, '/addMedicine');
   }
+
   void _navigateToProductionDetailsScreen() {
     Navigator.pushNamed(context, '/productionDetails');
   }
+
   void _navigateToPharmacyListScreen() {
     Navigator.pushNamed(context, '/pharmacyList');
   }
-  void _navigateToAddPharmacyScreen() {
-    Navigator.pushNamed(context, '/addPharmacy');
-  }
 
+  void _navigateToPaymentReceivedScreen() {
+    Navigator.pushNamed(context, '/paymentReceived');
+  }
 }
