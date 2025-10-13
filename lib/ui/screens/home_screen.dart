@@ -1,3 +1,4 @@
+import 'package:Mars/ui/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/action_button.dart';
@@ -13,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String? userRole;
   String? _firstName;
+  String? currentUserPhone;
 
   @override
   void initState() {
@@ -25,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       userRole = prefs.getString('position');
       _firstName = prefs.getString('first_name');
+      currentUserPhone = prefs.getString('phone');
     });
   }
 
@@ -76,7 +79,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ActionButton(
                   title: 'Dashboard',
                   icon: Icons.dashboard,
-                  onTap: _navigateToDashboardScreen,
+                  onTap: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DashboardScreen(currentUserPhone: currentUserPhone!)));
+                  },
                 ),
               ],
             ),
@@ -231,10 +238,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _navigateToOrdersScreen() {
     Navigator.pushNamed(context, '/orders');
-  }
-
-  void _navigateToDashboardScreen() {
-    Navigator.pushNamed(context, '/dashboard');
   }
 
   void _navigateToProfileScreen() {

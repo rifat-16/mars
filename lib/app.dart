@@ -1,8 +1,10 @@
+import 'package:Mars/models/user_model.dart';
 import 'package:Mars/ui/screens/add_payment.dart';
 import 'package:Mars/ui/screens/customers_list.dart';
+import 'package:Mars/ui/screens/dashboard_screen.dart';
 import 'package:Mars/ui/screens/orders_details_screen.dart';
 import 'package:Mars/ui/screens/payment_received_screen.dart';
-import 'package:Mars/ui/screens/pharmacy_details.dart';
+import 'package:Mars/ui/screens/customer_details.dart';
 import 'package:Mars/ui/screens/production_details_list_screen.dart';
 import 'package:Mars/ui/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +13,6 @@ import 'ui/screens/login_screen.dart';
 import 'ui/screens/otp_verify_screen.dart';
 import 'ui/screens/set_new_password_screen.dart';
 import 'ui/screens/signup_screen.dart';
-import 'ui/screens/dashboard_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/profile_screen.dart';
 import 'ui/screens/add_production_screen.dart';
@@ -22,6 +23,7 @@ import 'ui/screens/create_order_screen.dart';
 import 'ui/screens/orders_screen.dart';
 import 'ui/screens/add_new_employee_screen.dart';
 import 'ui/screens/employee_screen.dart';
+
 
 
 class Mars extends StatelessWidget {
@@ -40,7 +42,6 @@ class Mars extends StatelessWidget {
         '/setNewPassword': (context) => const SetNewPasswordScreen(),
         '/home': (context) => HomeScreen(),
         '/profile': (context) => ProfileScreen(),
-        '/dashboard': (context) => DashboardScreen(),
         '/medicine': (context) => MedicineScreen(),
         '/addMedicine': (context) => AddMedicineScreen(),
         '/orders': (context) => OrdersScreen(),
@@ -52,7 +53,7 @@ class Mars extends StatelessWidget {
         '/addEmployee': (context) => const AddEmployeeScreen(),
         '/productionDetails': (context) => ProductionDetailsListScreen(),
         '/pharmacyList': (context) => PharmacyList(),
-        '/pharmacyDetails': (context) => PharmacyDetails(),
+        '/pharmacyDetails': (context) => CustomerDetails(),
         '/paymentReceived': (context) => PaymentReceivedScreen(),
         '/addPayment': (context) => AddPayment(),
       },

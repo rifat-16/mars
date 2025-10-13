@@ -1,18 +1,18 @@
-import 'package:Mars/ui/screens/pharmacy_orders_history.dart';
+import 'package:Mars/ui/screens/customer_orders_history.dart';
 import 'package:Mars/ui/widgets/main_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/pharmacy_details_card.dart';
 import 'customer_payment_received_history.dart';
 
-class PharmacyDetails extends StatefulWidget {
-  const PharmacyDetails({super.key});
+class CustomerDetails extends StatefulWidget {
+  const CustomerDetails({super.key});
 
   @override
-  State<PharmacyDetails> createState() => _PharmacyDetailsState();
+  State<CustomerDetails> createState() => _CustomerDetailsState();
 }
 
-class _PharmacyDetailsState extends State<PharmacyDetails> {
+class _CustomerDetailsState extends State<CustomerDetails> {
   Map<String, dynamic>? pharmacyData;
 
   Future<double> _calculateTotalPayments(String phone) async {
@@ -177,7 +177,7 @@ class _PharmacyDetailsState extends State<PharmacyDetails> {
                   InkWell(
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return PharmacyOrdersHistory(phoneNumber: phone);
+                        return CustomerPaymentReceivedHistory(phoneNumber: phone);
                       }));
                     },
                     child: PharmacyDetailsCard(

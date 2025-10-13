@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import '../widgets/main_app_bar.dart';
 import 'package:intl/intl.dart';
 
-class PharmacyOrdersHistory extends StatefulWidget {
+class CustomerOrdersHistory extends StatefulWidget {
   final String phoneNumber;
-  const PharmacyOrdersHistory({super.key, required this.phoneNumber});
+  const CustomerOrdersHistory({super.key, required this.phoneNumber});
 
   @override
-  State<PharmacyOrdersHistory> createState() => _PharmacyOrdersHistoryState();
+  State<CustomerOrdersHistory> createState() => _PharmacyOrdersHistoryState();
 }
 
-class _PharmacyOrdersHistoryState extends State<PharmacyOrdersHistory> {
+class _PharmacyOrdersHistoryState extends State<CustomerOrdersHistory> {
   late Future<List<Map<String, dynamic>>> _ordersFuture;
 
   @override
