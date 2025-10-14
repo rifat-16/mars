@@ -126,39 +126,41 @@ class ProductDetailsScreen extends StatelessWidget {
                       child: _buildPriceCard(
                         title: "TP Price",
                         price: data["tp"]?.toString() ?? "0",
-                        color: Colors.green[50]!,
+                        color: Colors.green,
                         textColor: Colors.green[900]!,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 18),
                     Expanded(
                       child: _buildPriceCard(
                         title: "MRP Price",
                         price: data["mrp"]?.toString() ?? "0",
-                        color: Colors.orange[50]!,
+                        color: Colors.orange,
                         textColor: Colors.orange[900]!,
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 36),
                 Center(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      backgroundColor: Colors.green, // fallback gradient color
+                      elevation: 6,
+                      shadowColor: Colors.greenAccent.withOpacity(0.5),
                     ),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Feature coming soon!")),
                       );
                     },
-                    icon: const Icon(Icons.shopping_cart),
+                    icon: const Icon(Icons.shopping_cart, size: 22),
                     label: const Text(
                       "Add to Cart",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -186,19 +188,35 @@ class ProductDetailsScreen extends StatelessWidget {
     required Color color,
     required Color textColor,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
-          const SizedBox(height: 6),
-          Text("$price ৳", style: TextStyle(fontSize: 18, color: textColor)),
-        ],
+    return Material(
+      borderRadius: BorderRadius.circular(16),
+      elevation: 4,
+      shadowColor: Colors.black26,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {},
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                color.withOpacity(0.6),
+                color,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Text(title,
+                  style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+              const SizedBox(height: 8),
+              Text("$price ৳", style: TextStyle(fontSize: 20, color: textColor, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
       ),
     );
   }

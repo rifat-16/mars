@@ -103,7 +103,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     dynamic priceRaw = item["price"];
                     double qty = 0.0;
                     double price = 0.0;
-                    // Parse qty
                     if (qtyRaw is int) {
                       qty = qtyRaw.toDouble();
                     } else if (qtyRaw is double) {
@@ -111,7 +110,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     } else if (qtyRaw is String) {
                       qty = double.tryParse(qtyRaw) ?? 0.0;
                     }
-                    // Parse price
                     if (priceRaw is int) {
                       price = priceRaw.toDouble();
                     } else if (priceRaw is double) {
@@ -122,89 +120,98 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     total += qty * price;
                   }
 
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 3,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      title: Text(
-                        order["customerName"],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 5),
-                          Text(
-                            "Date: ${order["createdAt"] != null && order["createdAt"] is Timestamp ? DateFormat('dd/MM/yyyy').format((order["createdAt"] as Timestamp).toDate()) : "N/A"}",
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            'Items: ${order["orderItems"] != null ? (order["orderItems"] as List<dynamic>).length : 0}',
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          Row(
-                            children: [
-                              Text(
-                                "Total: ${order["totalAmount"].toStringAsFixed(2)}",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              const Text(
-                                'TK',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(
-                            order["status"] ?? "",
-                          ).withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          order["status"] ?? "Unknown",
-                          style: TextStyle(
-                            color: _getStatusColor(order["status"] ?? ""),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                  final statusColor = _getStatusColor(order["status"] ?? "");
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: InkWell(
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => OrdersDetailsScreen(orderId: order["id"]),
+                        ),
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: (order["status"] ?? "") == "Pending"
+                              ? LinearGradient(
+                                  colors: [statusColor.withOpacity(0.15), Colors.white],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                )
+                              : null,
+                          color: (order["status"] ?? "") != "Pending" ? Colors.white : null,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    order["customerName"],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "Date: ${order["createdAt"] != null && order["createdAt"] is Timestamp ? DateFormat('dd/MM/yyyy').format((order["createdAt"] as Timestamp).toDate()) : "N/A"}",
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Items: ${order["orderItems"] != null ? (order["orderItems"] as List<dynamic>).length : 0}',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade800,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "Total: ${total.toStringAsFixed(2)} TK",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: Colors.grey.shade800,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: statusColor.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: Text(
+                                order["status"] ?? "Unknown",
+                                style: TextStyle(
+                                  color: statusColor,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

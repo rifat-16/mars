@@ -1,3 +1,4 @@
+import 'package:Mars/ui/widgets/main_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../auth/role_controller.dart';
@@ -194,12 +195,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text("Admin Dashboard"),
-        centerTitle: true,
-        backgroundColor: Colors.teal,
-        elevation: 0,
-      ),
+      appBar: MainAppBar(title: 'Admin Dashboard', icon: Icons.dashboard),
       body: RefreshIndicator(
         onRefresh: fetchAdminData,
         child: SingleChildScrollView(
@@ -479,12 +475,7 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text("My Dashboard"),
-        centerTitle: true,
-        backgroundColor: Colors.teal,
-        elevation: 0,
-      ),
+      appBar: MainAppBar(title: 'My Dashboard', icon: Icons.dashboard),
       body: RefreshIndicator(
         onRefresh: fetchUserData,
         child: SingleChildScrollView(

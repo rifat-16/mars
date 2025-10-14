@@ -98,7 +98,6 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
           // Safely get other fields with placeholders if null
           final customerName =
               order['customerName']?.toString() ?? 'Unknown Customer';
-          final email = order['email']?.toString() ?? 'No Email';
           final phoneNumber =
               order['phoneNumber']?.toString() ?? 'No Phone Number';
           final address = order['address']?.toString() ?? 'No Address';
@@ -111,23 +110,32 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Customer Info Card
-                Card(
-                  elevation: 3,
-                  shadowColor: Colors.teal.withOpacity(0.08),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                // Modernized Customer Info Card
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.green.shade50, Colors.white],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.teal.withOpacity(0.07),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
                     child: Column(
                       children: [
-                        buildListTile(
-                          Icons.person_outline,
-                          "Customer Name",
-                          customerName,
+                        buildModernListTile(
+                          icon: Icons.person_outline,
+                          title: "Customer Name",
+                          subtitle: customerName,
                         ),
-                        buildDivider(),
-                        buildListTile(Icons.email_outlined, "Email", email),
                         buildDivider(),
                         buildListTile(
                           Icons.phone_outlined,
@@ -422,3 +430,51 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
     );
   }
 }
+
+  Widget buildModernListTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.green.shade100,
+            ),
+            padding: const EdgeInsets.all(10),
+            child: Icon(icon, color: Colors.green.shade700, size: 26),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }

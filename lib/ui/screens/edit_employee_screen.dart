@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../widgets/main_app_bar.dart';
+
 class EditEmployeeScreen extends StatefulWidget {
   final String employeeId;
 
@@ -92,10 +94,7 @@ class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Employee'),
-        backgroundColor: Colors.blue,
-      ),
+      appBar: MainAppBar(title: 'Edit Employee', icon: Icons.edit),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(

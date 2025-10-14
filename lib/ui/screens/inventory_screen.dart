@@ -35,6 +35,59 @@ class _InventoryScreenState extends State<InventoryScreen> {
     _fetchInventory();
   }
 
+  Widget _buildProductCard(Map<String, dynamic> prod) {
+    return Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green.shade200, Colors.green.shade50],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Center(
+                  child: Icon(
+                    Icons.medical_services,
+                    size: 48,
+                    color: Colors.green.shade700,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                prod["productName"] ?? '',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Stock: ${prod["quantity"] ?? 0}',
+                style: TextStyle(
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -63,25 +116,33 @@ class _InventoryScreenState extends State<InventoryScreen> {
               child: Row(
                 children: categories.map((category) {
                   bool isSelected = category == selectedCategory;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = category;
-                      });
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.green : Colors.grey[300],
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Material(
+                      color: isSelected ? Colors.green : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(30),
+                      child: InkWell(
                         borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Text(
-                        category,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: FontWeight.w600,
+                        onTap: () {
+                          setState(() {
+                            selectedCategory = category;
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Text(
+                            category,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -89,115 +150,50 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 }).toList(),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            // Products Grid
+            // Products Grid with animated transition
             Expanded(
-              child: filteredProducts.isEmpty
-                  ? const Center(child: Text("No products found"))
-                  : GridView.builder(
-                      itemCount: filteredProducts.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.78,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                      ),
-                      itemBuilder: (context, index) {
-                        final prod = filteredProducts[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ProductDetailsScreen(product: prod),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.2),
-                                  spreadRadius: 2,
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.green[50],
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Center(
-                                      child: Icon(Icons.medical_services,
-                                          size: 40, color: Colors.green),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(prod["productName"] ?? '',
-                                    style:
-                                        const TextStyle(fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 4),
-                                Text('Stock: ${prod["quantity"] ?? 0}',
-                                    style: TextStyle(color: Colors.grey[700])),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  // Fade and slide from below
+                  final fade = FadeTransition(opacity: animation, child: child);
+                  final slide = SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0.08),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(parent: animation, curve: Curves.easeOut),
                     ),
+                    child: fade,
+                  );
+                  return slide;
+                },
+                child: filteredProducts.isEmpty
+                    ? const Center(
+                        key: ValueKey('empty'),
+                        child: Text("No products found"),
+                      )
+                    : GridView.builder(
+                        key: ValueKey(selectedCategory),
+                        itemCount: filteredProducts.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.78,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
+                        itemBuilder: (context, index) {
+                          final prod = filteredProducts[index];
+                          return _buildProductCard(prod);
+                        },
+                      ),
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// Product Details Screen
-class ProductDetailsScreen extends StatelessWidget {
-  final Map<String, dynamic> product;
-  const ProductDetailsScreen({super.key, required this.product});
-
-  Widget _buildInfoCard(
-      String title,
-      String value, {
-        Color? color,
-        IconData? icon,
-      }) {
-    return InventoryStockCard(
-      title: title,
-      value: value,
-      color: color,
-      icon: icon,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(product['name'] ?? 'Product Details'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [
-          _buildInfoCard('Name', product['name'] ?? '-', icon: Icons.label),
-          _buildInfoCard('Price', '\$${product['price'] ?? '0.00'}', color: Colors.green, icon: Icons.attach_money),
-          _buildInfoCard('Stock', '${product['stock'] ?? 0}', color: Colors.orange, icon: Icons.inventory),
-        ],
       ),
     );
   }
