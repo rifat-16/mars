@@ -23,6 +23,7 @@ dependencies:
   dropdown_button2: ^2.0.1
   shared_preferences: ^2.5.3
   image_picker: ^1.2.0
+  flutter_launcher_icons: ^0.14.4
 
 
   cupertino_icons: ^1.0.8
@@ -42,3 +43,9 @@ flutter:
 
   assets:
     - assets/images/
+
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"

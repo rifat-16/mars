@@ -298,7 +298,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                               elevation: 1,
                               color: Colors.white,
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                                 child: Row(
                                   children: [
                                     Expanded(

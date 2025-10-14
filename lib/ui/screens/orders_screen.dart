@@ -52,9 +52,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
             stream: (userRole == 'Owner' || userRole == 'Manager')
                 ? FirebaseFirestore.instance.collection('orders').snapshots()
                 : FirebaseFirestore.instance
-                    .collection('orders')
-                    .where('phoneNumber', isEqualTo: userPhoneNumber)
-                    .snapshots(),
+                .collection('orders')
+                .where('phoneNumber', isEqualTo: userPhoneNumber)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -80,7 +80,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 } else if (aStatus != "Pending" && bStatus == "Pending") {
                   return 1;
                 } else {
-                  // Same status, sort by createdAt descending
                   final aDate = a["createdAt"] is Timestamp
                       ? (a["createdAt"] as Timestamp).toDate()
                       : DateTime(2000);
@@ -96,29 +95,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 itemCount: orders.length,
                 itemBuilder: (context, index) {
                   final order = orders[index];
-                  final items = (order["items"] ?? []) as List<dynamic>;
-                  double total = 0.0;
-                  for (final item in items) {
-                    dynamic qtyRaw = item["qty"];
-                    dynamic priceRaw = item["price"];
-                    double qty = 0.0;
-                    double price = 0.0;
-                    if (qtyRaw is int) {
-                      qty = qtyRaw.toDouble();
-                    } else if (qtyRaw is double) {
-                      qty = qtyRaw;
-                    } else if (qtyRaw is String) {
-                      qty = double.tryParse(qtyRaw) ?? 0.0;
-                    }
-                    if (priceRaw is int) {
-                      price = priceRaw.toDouble();
-                    } else if (priceRaw is double) {
-                      price = priceRaw;
-                    } else if (priceRaw is String) {
-                      price = double.tryParse(priceRaw) ?? 0.0;
-                    }
-                    total += qty * price;
-                  }
+                  final items = (order["orderItems"] ?? []) as List<dynamic>;
+
+                  // 🔥 Total directly from totalAmount
+                  double total = (order["totalAmount"] ?? 0).toDouble();
 
                   final statusColor = _getStatusColor(order["status"] ?? "");
 
@@ -137,10 +117,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         decoration: BoxDecoration(
                           gradient: (order["status"] ?? "") == "Pending"
                               ? LinearGradient(
-                                  colors: [statusColor.withOpacity(0.15), Colors.white],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                )
+                            colors: [statusColor.withOpacity(0.15), Colors.white],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
                               : null,
                           color: (order["status"] ?? "") != "Pending" ? Colors.white : null,
                           borderRadius: BorderRadius.circular(20),
@@ -160,7 +140,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    order["customerName"],
+                                    order["customerName"] ?? "Unknown",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 20,
@@ -177,7 +157,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    'Items: ${order["orderItems"] != null ? (order["orderItems"] as List<dynamic>).length : 0}',
+                                    'Items: ${items.length}',
                                     style: TextStyle(
                                       color: Colors.grey.shade800,
                                       fontSize: 14,
@@ -222,11 +202,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
           ),
           floatingActionButton: (userRole != null && (userRole != 'Owner' && userRole != 'Manager'))
               ? FloatingActionButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/createOrder');
-                  },
-                  child: const Icon(Icons.add),
-                )
+            onPressed: () {
+              Navigator.pushNamed(context, '/createOrder');
+            },
+            child: const Icon(Icons.add),
+          )
               : null,
         );
       },
