@@ -1,3 +1,4 @@
+import 'package:Mars/service/sms_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -369,6 +370,12 @@ class _OrdersDetailsScreenState extends State<OrdersDetailsScreen> {
 
                                   // Commit batch
                                   await batch.commit();
+
+                                  // Prepare SMS message
+                                  String productSummary = items.map((item) => '${item['name']} x${item['qty']}').join(', ');
+                                  String smsMessage = 'Hello $customerName, your order of $productSummary totaling $totalAmount TK has been delivered. Thank you! (MARS Laboratories Unani)';
+                                  // Send SMS
+                                  SmsService.sendSms(number: phoneNumber, message: smsMessage);
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(

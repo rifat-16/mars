@@ -2,6 +2,7 @@ import 'package:Mars/ui/screens/customer_orders_history.dart';
 import 'package:Mars/ui/widgets/main_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../service/sms_service.dart';
 import '../widgets/pharmacy_details_card.dart';
 import 'customer_payment_received_history.dart';
 
@@ -14,6 +15,8 @@ class CustomerDetails extends StatefulWidget {
 
 class _CustomerDetailsState extends State<CustomerDetails> {
   Map<String, dynamic>? pharmacyData;
+  bool _isLoading = false;
+
 
   Future<double> _calculateTotalPayments(String phone) async {
     double total = 0;
@@ -107,7 +110,6 @@ class _CustomerDetailsState extends State<CustomerDetails> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          const SizedBox(height: 20),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             padding: const EdgeInsets.all(20),
@@ -143,7 +145,7 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 _buildInfoRow('Name', name),
                 const SizedBox(height: 10),
                 _buildInfoRow('Address', address),
@@ -160,7 +162,7 @@ class _CustomerDetailsState extends State<CustomerDetails> {
             builder: (context, AsyncSnapshot<List<double>> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: EdgeInsets.all(6),
                   child: CircularProgressIndicator(),
                 );
               }
@@ -206,6 +208,91 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                 ],
               );
             },
+          ),
+          const SizedBox(height: 10),
+          // inside _buildPharmacyInfo Column er last e ElevatedButton er jaygay
+          // inside _buildPharmacyInfo
+          // inside _buildPharmacyInfo
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: FutureBuilder<DocumentSnapshot>(
+              // Check if SMS already sent today
+              future: FirebaseFirestore.instance
+                  .collection('sms_logs')
+                  .doc('${phone}_${DateTime.now().toIso8601String().substring(0,10)}')
+                  .get(),
+              builder: (context, snapshot) {
+                bool smsAlreadySent = false;
+                if (snapshot.hasData && snapshot.data!.exists) {
+                  smsAlreadySent = true;
+                }
+
+                return ElevatedButton(
+                  onPressed: smsAlreadySent || _isLoading
+                      ? null
+                      : () async {
+                    setState(() { _isLoading = true; });
+
+                    try {
+                      final totalOrders = await _calculateTotalOrdersAmount(phone);
+                      final totalPayments = await _calculateTotalPayments(phone);
+                      final totalDue = totalOrders - totalPayments;
+
+                      String smsMessage =
+                          'Hello ${pharmacyData?['name'] ?? 'Customer'}, your total due amount is ${totalDue.toStringAsFixed(2)} TK. Please pay at your earliest convenience. Thank you! (MARS Laboratories Unani) ';
+
+                      await SmsService.sendSms(number: phone, message: smsMessage);
+
+                      // Log SMS
+                      await FirebaseFirestore.instance
+                          .collection('sms_logs')
+                          .doc('${phone}_${DateTime.now().toIso8601String().substring(0,10)}')
+                          .set({
+                        'phone': phone,
+                        'date': DateTime.now().toIso8601String(),
+                        'message': smsMessage,
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Due amount SMS sent successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to send SMS: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    } finally {
+                      setState(() { _isLoading = false; });
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: smsAlreadySent ? Colors.grey : Colors.green,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                      : Text(
+                    smsAlreadySent ? 'SMS Already Sent Today' : 'Send Due SMS',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                );
+              },
+            ),
           ),
           const SizedBox(height: 20),
         ],

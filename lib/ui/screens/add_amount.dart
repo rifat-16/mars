@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../../service/sms_service.dart';
 import '../widgets/main_app_bar.dart';
 
 class PharmacyDetailsScreen extends StatefulWidget {
@@ -55,6 +56,14 @@ class _PharmacyDetailsScreenState extends State<PharmacyDetailsScreen> {
       });
 
       await Future.delayed(const Duration(seconds: 2));
+      // Prepare SMS message
+      String smsMessage = 'Hello ${widget.pharmacy['name']}, we have received your payment of ${amount.toStringAsFixed(2)} TK via $_selectedPaymentMethod. Thank you! (MARS Laboratories Unani)';
+
+      // Send SMS
+      await SmsService.sendSms(
+        number: widget.pharmacy['phone'] ?? '',
+        message: smsMessage,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Payment saved successfully'),
           backgroundColor: Colors.green,

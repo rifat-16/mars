@@ -12,7 +12,7 @@ class PharmacyDetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(8),
       child: Center(
         child: Container(
           height: 150,
