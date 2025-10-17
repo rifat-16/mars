@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -10,6 +11,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailTEController = TextEditingController();
+  bool _isLoding = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +23,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           padding: const EdgeInsets.all(20),
           child: Center(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const SizedBox(height: 100),
+                Text('Note: Check email in your spam box!',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 100),
                 Text('Forgot Password',
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 20),
@@ -42,9 +52,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _onTapSubmitButton,
-                  child: const Text('Submit'),
+                Visibility(
+                  visible: _isLoding == false,
+                  replacement: const CircularProgressIndicator(),
+                  child: ElevatedButton(
+                    onPressed: _onTapSubmitButton,
+                    child: const Text('Submit'),
+                  ),
                 ),
               ],
             ),
@@ -54,9 +68,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  void _onTapSubmitButton() {
+  void _onTapSubmitButton() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.pushNamed(context, '/otpVerify');
+      try {
+        setState(() {
+          _isLoding = true;
+        });
+        await FirebaseAuth.instance
+            .sendPasswordResetEmail(email: _emailTEController.text.trim());
+        Future.delayed(const Duration(seconds: 1)
+            ).then((value) => Navigator.pop(context));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password reset email sent successfully! Please check your email.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        setState(() {
+          _isLoding = false;
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
     }
   }
 
