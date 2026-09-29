@@ -1,0 +1,30 @@
+class AppRoutes {
+  static const splash = '/';
+  static const login = '/login';
+  static const loginLegacy = '/LoginScreen';
+  static const signup = '/signup';
+  static const forgotPassword = '/forgotPassword';
+  static const otpVerify = '/otpVerify';
+  static const setNewPassword = '/setNewPassword';
+  static const home = '/home';
+  static const profile = '/profile';
+  static const medicine = '/medicine';
+  static const addMedicine = '/addMedicine';
+  static const orders = '/orders';
+  static const ordersDetails = '/ordersDetails';
+  static const createOrder = '/createOrder';
+  static const inventory = '/inventory';
+  static const addProduction = '/addProduction';
+  static const employee = '/employee';
+  static const addEmployee = '/addEmployee';
+  static const productionDetails = '/productionDetails';
+  static const pharmacyList = '/pharmacyList';
+  static const pharmacyDetails = '/pharmacyDetails';
+  static const paymentReceived = '/paymentReceived';
+  static const addPayment = '/addPayment';
+  static const eventCreate = '/eventCreate';
+  static const eventsV3 = '/eventsV3';
+  static const eventHubV3 = '/eventHubV3';
+  static const eventEnrollmentFormV3 = '/eventEnrollmentFormV3';
+  static const eventEnrollmentDetailsV3 = '/eventEnrollmentDetailsV3';
+}

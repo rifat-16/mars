@@ -1,0 +1,223 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function roleFromDoc(path) {
+      return exists(path)
+        ? (
+            get(path).data.position is string
+              ? get(path).data.position
+              : (
+                  get(path).data.role is string
+                    ? get(path).data.role
+                    : ''
+                )
+          )
+        : '';
+    }
+
+    function currentRole() {
+      let userPath = /databases/$(database)/documents/users/$(request.auth.uid);
+      let employeePath = /databases/$(database)/documents/employees/$(request.auth.uid);
+      let userRole = roleFromDoc(userPath);
+      return userRole != '' ? userRole : roleFromDoc(employeePath);
+    }
+
+    function currentPhone() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phone
+        : exists(/databases/$(database)/documents/employees/$(request.auth.uid))
+          ? get(/databases/$(database)/documents/employees/$(request.auth.uid)).data.phone
+          : '';
+    }
+
+    function isOwner() {
+      let role = currentRole();
+      return signedIn() && (role == 'Owner' || role == 'owner' || role == 'OWNER');
+    }
+
+    function isManager() {
+      let role = currentRole();
+      return signedIn() && (role == 'Manager' || role == 'manager' || role == 'MANAGER');
+    }
+
+    function isOwnerOrManager() {
+      return isOwner() || isManager();
+    }
+
+    function isAllowedEmployeeRole(position) {
+      return position in [
+        'Admin',
+        'Owner',
+        'AM',
+        'RSM',
+        'SM',
+        'DSM',
+        'GM',
+        'Manager',
+        'MPO'
+      ];
+    }
+
+    function registrationParticipantUid(registrationId) {
+      let regPath = /databases/$(database)/documents/event_registrations/$(registrationId);
+      return registrationId is string
+        && exists(regPath)
+        && get(regPath).data.participantUid is string
+          ? get(regPath).data.participantUid
+          : '';
+    }
+
+    function profileEditableKeys() {
+      return [
+        'participantName',
+        'participantPhone',
+        'participantPhoneNormalized',
+        'participantAddress',
+        'emergencyPhone',
+        'roleAtRegistration',
+        'willBringCompanion',
+        'companionCount',
+        'companionRelation',
+        'companionExtraCharge',
+        'updatedAt',
+        'updatedByUid'
+      ];
+    }
+
+    function closeRequestKeys() {
+      return [
+        'billingStatus',
+        'billingCloseRequestedAt',
+        'billingCloseRequestedByUid',
+        'billingCloseRequestedByName',
+        'billingCloseNote',
+        'updatedAt',
+        'updatedByUid'
+      ];
+    }
+
+    function isTaggedOrderCreate() {
+      return request.resource.data.eventRegistrationId is string
+        && request.resource.data.eventRegistrationId.size() > 0;
+    }
+
+    function isValidTaggedOrderCreate() {
+      let regPath = /databases/$(database)/documents/event_registrations/$(request.resource.data.eventRegistrationId);
+      return request.resource.data.eventId is string
+        && request.resource.data.eventId.size() > 0
+        && request.resource.data.eventParticipantUid is string
+        && request.resource.data.eventParticipantUid.size() > 0
+        && exists(regPath)
+        && get(regPath).data.eventId == request.resource.data.eventId
+        && get(regPath).data.billingStatus != 'closed'
+        && get(regPath).data.participantUid == request.resource.data.eventParticipantUid
+        && (isOwnerOrManager() || get(regPath).data.participantUid == request.auth.uid);
+    }
+
+    match /users/{userId} {
+      allow create: if signedIn() && request.auth.uid == userId;
+      allow read, update: if signedIn() && (request.auth.uid == userId || isOwnerOrManager());
+      allow delete: if isOwner();
+    }
+
+    match /employees/{employeeId} {
+      allow read: if signedIn() && (request.auth.uid == employeeId || isOwnerOrManager());
+      allow create: if (signedIn()
+        && request.auth.uid == employeeId
+        && isAllowedEmployeeRole(request.resource.data.position))
+        || isOwnerOrManager();
+      allow update: if isOwnerOrManager() || (signedIn() && request.auth.uid == employeeId);
+      allow delete: if isOwner();
+    }
+
+    match /events/{eventId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isOwnerOrManager();
+    }
+
+    match /event_registrations/{registrationId} {
+      allow read: if signedIn() && (isOwnerOrManager() || resource.data.participantUid == request.auth.uid);
+
+      allow create: if isOwnerOrManager() || (
+        signedIn()
+        && request.resource.data.participantUid == request.auth.uid
+      );
+
+      allow update: if isOwnerOrManager() || (
+        signedIn()
+        && resource.data.participantUid == request.auth.uid
+        && request.resource.data.participantUid == request.auth.uid
+        && (
+          request.resource.data.diff(resource.data).changedKeys().hasOnly(profileEditableKeys())
+          || (
+            resource.data.billingStatus == 'open'
+            && request.resource.data.billingStatus == 'close_requested'
+            && request.resource.data.diff(resource.data).changedKeys().hasOnly(closeRequestKeys())
+          )
+        )
+      );
+
+      allow delete: if isOwner();
+    }
+
+    match /event_payments/{paymentId} {
+      allow read: if signedIn() && (
+        isOwnerOrManager()
+        || resource.data.participantUid == request.auth.uid
+        || registrationParticipantUid(resource.data.registrationId) == request.auth.uid
+      );
+      allow create, update, delete: if isOwner();
+    }
+
+    match /event_messages/{messageId} {
+      allow read: if signedIn() && (isOwnerOrManager() || resource.data.participantUid == request.auth.uid);
+      allow create: if signedIn() && (isOwnerOrManager() || request.resource.data.participantUid == request.auth.uid);
+      allow update, delete: if isOwnerOrManager();
+    }
+
+    match /orders/{orderId} {
+      allow read: if signedIn() && (isOwnerOrManager() || resource.data.phoneNumber == currentPhone());
+      allow create: if signedIn() && (!isTaggedOrderCreate() || isValidTaggedOrderCreate());
+      allow update, delete: if isOwnerOrManager();
+    }
+
+    match /inventory/{inventoryId} {
+      allow read: if signedIn();
+      allow write: if isOwnerOrManager();
+    }
+
+    match /payments/{paymentId} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if isOwnerOrManager();
+    }
+
+    match /medicines/{medicineId} {
+      allow read: if signedIn();
+      allow write: if isOwnerOrManager();
+    }
+
+    match /productions/{productionId} {
+      allow read: if signedIn();
+      allow write: if isOwnerOrManager();
+    }
+
+    match /pharmacies/{pharmacyId} {
+      allow read: if signedIn();
+      allow write: if isOwnerOrManager();
+    }
+
+    match /sms_logs/{logId} {
+      allow read: if signedIn();
+      allow write: if isOwnerOrManager();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
