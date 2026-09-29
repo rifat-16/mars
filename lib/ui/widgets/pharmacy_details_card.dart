@@ -6,7 +6,10 @@ class PharmacyDetailsCard extends StatelessWidget {
   final Color color;
 
   const PharmacyDetailsCard({
-    super.key, required this.title, required this.totalAmount, required this.color,
+    super.key,
+    required this.title,
+    required this.totalAmount,
+    required this.color,
   });
 
   @override

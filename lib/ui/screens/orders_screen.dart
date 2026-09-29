@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+
+import '../../core/constants/app_routes.dart';
+import '../../state/orders_provider.dart';
+import '../../state/session_provider.dart';
 import '../widgets/main_app_bar.dart';
-import 'orders_details_screen.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -13,22 +15,27 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  String? userPhoneNumber;
-  String? userRole;
+  bool _initialized = false;
 
-  Future<void> _loadUserRole() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    userPhoneNumber = prefs.getString('phone');
-    userRole = prefs.getString('position');
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
+    final session = context.read<SessionProvider>();
+    context.read<OrdersProvider>().listenOrders(
+      role: session.role,
+      userPhone: session.phone,
+    );
   }
 
-  Color _getStatusColor(String status) {
+  Color _statusColor(String status) {
     switch (status) {
-      case "Delivered":
+      case 'Delivered':
         return Colors.green;
-      case "Pending":
+      case 'Pending':
         return Colors.orange;
-      case "Cancelled":
+      case 'Cancelled':
         return Colors.red;
       default:
         return Colors.grey;
@@ -37,179 +44,149 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _loadUserRole(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+    final session = context.watch<SessionProvider>();
+    final ordersState = context.watch<OrdersProvider>().ordersState;
 
-        return Scaffold(
-          appBar: const MainAppBar(title: 'Orders', icon: Icons.shopping_cart),
-          body: StreamBuilder<QuerySnapshot>(
-            stream: (userRole == 'Owner' || userRole == 'Manager')
-                ? FirebaseFirestore.instance.collection('orders').snapshots()
-                : FirebaseFirestore.instance
-                .collection('orders')
-                .where('phoneNumber', isEqualTo: userPhoneNumber)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
+    return Scaffold(
+      appBar: const MainAppBar(title: 'Orders', icon: Icons.shopping_cart),
+      body: Builder(
+        builder: (context) {
+          if (ordersState.isLoading || ordersState.isIdle) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Center(child: Text("No orders found"));
-              }
+          if (ordersState.isError) {
+            return Center(
+              child: Text(ordersState.errorMessage ?? 'Failed to load orders'),
+            );
+          }
 
-              final orders = snapshot.data!.docs.map((doc) {
-                final data = doc.data() as Map<String, dynamic>;
-                data['id'] = doc.id;
-                return data;
-              }).toList();
+          final orders = ordersState.data ?? [];
+          if (orders.isEmpty) {
+            return const Center(child: Text('No orders found'));
+          }
 
-              // Pending orders upore, baki orders recent date descending
-              orders.sort((a, b) {
-                final aStatus = a["status"] ?? "";
-                final bStatus = b["status"] ?? "";
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              final order = orders[index];
+              final statusColor = _statusColor(order.status);
+              final createdDate = order.createdAt;
 
-                if (aStatus == "Pending" && bStatus != "Pending") {
-                  return -1;
-                } else if (aStatus != "Pending" && bStatus == "Pending") {
-                  return 1;
-                } else {
-                  final aDate = a["createdAt"] is Timestamp
-                      ? (a["createdAt"] as Timestamp).toDate()
-                      : DateTime(2000);
-                  final bDate = b["createdAt"] is Timestamp
-                      ? (b["createdAt"] as Timestamp).toDate()
-                      : DateTime(2000);
-                  return bDate.compareTo(aDate); // recent first
-                }
-              });
-
-              return ListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: orders.length,
-                itemBuilder: (context, index) {
-                  final order = orders[index];
-                  final items = (order["orderItems"] ?? []) as List<dynamic>;
-
-                  // 🔥 Total directly from totalAmount
-                  double total = (order["totalAmount"] ?? 0).toDouble();
-
-                  final statusColor = _getStatusColor(order["status"] ?? "");
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: InkWell(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => OrdersDetailsScreen(orderId: order["id"]),
-                        ),
-                      ),
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.ordersDetails,
+                      arguments: order.id,
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: order.isPending
+                          ? LinearGradient(
+                              colors: [
+                                statusColor.withValues(alpha: 0.15),
+                                Colors.white,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      color: order.isPending ? null : Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: (order["status"] ?? "") == "Pending"
-                              ? LinearGradient(
-                            colors: [statusColor.withOpacity(0.15), Colors.white],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                              : null,
-                          color: (order["status"] ?? "") != "Pending" ? Colors.white : null,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    order["customerName"] ?? "Unknown",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    "Date: ${order["createdAt"] != null && order["createdAt"] is Timestamp ? DateFormat('dd/MM/yyyy').format((order["createdAt"] as Timestamp).toDate()) : "N/A"}",
-                                    style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Items: ${items.length}',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade800,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    "Total: ${total.toStringAsFixed(2)} TK",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                      color: Colors.grey.shade800,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: statusColor.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: Text(
-                                order["status"] ?? "Unknown",
-                                style: TextStyle(
-                                  color: statusColor,
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                order.customerName,
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 14,
+                                  fontSize: 20,
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 6),
+                              Text(
+                                'Date: ${createdDate != null ? DateFormat('dd/MM/yyyy').format(createdDate) : 'N/A'}',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Items: ${order.items.length}',
+                                style: TextStyle(
+                                  color: Colors.grey.shade800,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Total: ${order.totalAmount.toStringAsFixed(2)} TK',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: Colors.grey.shade800,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Text(
+                            order.status,
+                            style: TextStyle(
+                              color: statusColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                ),
               );
             },
-          ),
-          floatingActionButton: (userRole != null && (userRole != 'Owner' && userRole != 'Manager'))
-              ? FloatingActionButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/createOrder');
-            },
-            child: const Icon(Icons.add),
-          )
-              : null,
-        );
-      },
+          );
+        },
+      ),
+      floatingActionButton:
+          (session.role != 'Owner' && session.role != 'Manager')
+          ? FloatingActionButton(
+              onPressed: () =>
+                  Navigator.pushNamed(context, AppRoutes.createOrder),
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

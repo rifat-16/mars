@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'product_details_screen.dart';
 
 class AddMedicineScreen extends StatefulWidget {
   const AddMedicineScreen({super.key});
-
 
   @override
   State<AddMedicineScreen> createState() => _AddMedicineScreenState();
@@ -37,9 +35,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       filled: true,
       fillColor: Colors.grey[100],
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -63,7 +59,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 controller: _nameTEController,
                 decoration: _inputDecoration('Medicine Name'),
                 validator: (value) =>
-                value!.isEmpty ? 'Please enter medicine name' : null,
+                    value!.isEmpty ? 'Please enter medicine name' : null,
                 onSaved: (value) => name = value!,
               ),
               const SizedBox(height: 16),
@@ -78,7 +74,9 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                 decoration: _inputDecoration('Category'),
                 value: category,
                 items: categories
-                    .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+                    .map(
+                      (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
+                    )
                     .toList(),
                 onChanged: (value) => setState(() => category = value!),
               ),
@@ -109,9 +107,11 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     child: TextFormField(
                       controller: _tpPriceTEController,
                       decoration: _inputDecoration('TP Price'),
-                      keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                      onSaved: (value) => tpPrice = double.tryParse(value!) ?? 0,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      onSaved: (value) =>
+                          tpPrice = double.tryParse(value!) ?? 0,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -119,9 +119,11 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     child: TextFormField(
                       controller: _mrpPriceTEController,
                       decoration: _inputDecoration('MRP Price'),
-                      keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                      onSaved: (value) => mrpPrice = double.tryParse(value!) ?? 0,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      onSaved: (value) =>
+                          mrpPrice = double.tryParse(value!) ?? 0,
                     ),
                   ),
                 ],
@@ -135,7 +137,8 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 4,
                   ),
                   child: _isSaving
@@ -149,10 +152,13 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                         )
                       : const Text(
                           'Save Medicine',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -190,17 +196,18 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             duration: Duration(seconds: 1),
-              backgroundColor: Colors.green,
-              content: Text("Medicine saved successfully",
-            style: TextStyle(color: Colors.white),
-          )
+            backgroundColor: Colors.green,
+            content: Text(
+              "Medicine saved successfully",
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         );
       } catch (e) {
         setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to save: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to save: $e")));
       }
     }
   }

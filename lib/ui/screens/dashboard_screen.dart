@@ -1,44 +1,23 @@
-import 'package:Mars/ui/widgets/main_app_bar.dart';
+import 'package:mars/ui/widgets/main_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../auth/role_controller.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends StatelessWidget {
   final String currentUserPhone;
-  const DashboardScreen({super.key, required this.currentUserPhone});
+  final String currentUserRole;
 
-  @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  bool? isAdmin;
-
-  @override
-  void initState() {
-    super.initState();
-    checkUserRole();
-
-  }
-
-  Future<void> checkUserRole() async {
-    final role = await RoleController.getUserRole();
-    setState(() {
-      isAdmin = role == 'Owner';
-    });
-  }
+  const DashboardScreen({
+    super.key,
+    required this.currentUserPhone,
+    required this.currentUserRole,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (isAdmin == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    } else {
-      return isAdmin!
-          ? const AdminDashboardScreen()
-          : UserDashboardScreen(phoneNumber: widget.currentUserPhone);
-    }
+    final isAdmin = currentUserRole == 'Owner';
+    return isAdmin
+        ? const AdminDashboardScreen()
+        : UserDashboardScreen(phoneNumber: currentUserPhone);
   }
 }
 
@@ -74,10 +53,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final now = DateTime.now();
     final sevenDaysAgo = now.subtract(const Duration(days: 7));
 
-    final ordersSnapshot =
-        await FirebaseFirestore.instance.collection('orders').get();
-    final paymentsSnapshot =
-        await FirebaseFirestore.instance.collection('payments').get();
+    final ordersSnapshot = await FirebaseFirestore.instance
+        .collection('orders')
+        .get();
+    final paymentsSnapshot = await FirebaseFirestore.instance
+        .collection('payments')
+        .get();
 
     print('Admin orders fetched: ${ordersSnapshot.docs.length}');
     for (var doc in ordersSnapshot.docs) {
@@ -130,9 +111,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       double amount = 0.0;
       if (data.containsKey('amount') && data['amount'] != null) {
         amount = (data['amount'] as num).toDouble();
-      } else if (data.containsKey('totalAmount') && data['totalAmount'] != null) {
+      } else if (data.containsKey('totalAmount') &&
+          data['totalAmount'] != null) {
         amount = (data['totalAmount'] as num).toDouble();
-      } else if (data.containsKey('paymentAmount') && data['paymentAmount'] != null) {
+      } else if (data.containsKey('paymentAmount') &&
+          data['paymentAmount'] != null) {
         amount = (data['paymentAmount'] as num).toDouble();
       }
       if (orderDate != null && orderDate.isAfter(sevenDaysAgo)) {
@@ -209,10 +192,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Text(
                 "Recent Orders (Last 7 days)",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 19,
-                      fontFamily: 'Montserrat',
-                    ),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 19,
+                  fontFamily: 'Montserrat',
+                ),
               ),
               const SizedBox(height: 10),
               recentOrders.isEmpty
@@ -220,21 +203,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: Text(
                         "No recent orders.",
-                        style: TextStyle(color: Colors.grey[600], fontSize: 15.5),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 15.5,
+                        ),
                       ),
                     )
-                  : ModernCardList(
-                      items: recentOrders,
-                      isOrder: true,
-                    ),
+                  : ModernCardList(items: recentOrders, isOrder: true),
               const SizedBox(height: 28),
               Text(
                 "Recent Payments (Last 7 days)",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 19,
-                      fontFamily: 'Montserrat',
-                    ),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 19,
+                  fontFamily: 'Montserrat',
+                ),
               ),
               const SizedBox(height: 10),
               recentPayments.isEmpty
@@ -242,13 +225,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: Text(
                         "No recent payments.",
-                        style: TextStyle(color: Colors.grey[600], fontSize: 15.5),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 15.5,
+                        ),
                       ),
                     )
-                  : ModernCardList(
-                      items: recentPayments,
-                      isOrder: false,
-                    ),
+                  : ModernCardList(items: recentPayments, isOrder: false),
             ],
           ),
         ),
@@ -266,12 +249,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           icon: Icons.shopping_bag,
           gradientColors: [const Color(0xFF2193b0), const Color(0xFF6dd5ed)],
           sections: ordersEmpty
-              ? [
-                  const StatSection(
-                    label: "Total Amount",
-                    value: "No Data",
-                  ),
-                ]
+              ? [const StatSection(label: "Total Amount", value: "No Data")]
               : [
                   StatSection(
                     label: "Total Amount",
@@ -286,12 +264,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           icon: Icons.attach_money,
           gradientColors: [const Color(0xFF43cea2), const Color(0xFF185a9d)],
           sections: paymentsEmpty
-              ? [
-                  const StatSection(
-                    label: "Total Amount",
-                    value: "No Data",
-                  ),
-                ]
+              ? [const StatSection(label: "Total Amount", value: "No Data")]
               : [
                   StatSection(
                     label: "Total Amount",
@@ -308,7 +281,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           sections: [
             StatSection(
               label: "Due Amount",
-              value: dueAmount >= 0 ? "\$${dueAmount.toStringAsFixed(2)}" : "No Data",
+              value: dueAmount >= 0
+                  ? "\$${dueAmount.toStringAsFixed(2)}"
+                  : "No Data",
             ),
           ],
           highlightDue: dueAmount > 0,
@@ -316,7 +291,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ],
     );
   }
-
 }
 
 // ---------------------- User Dashboard ----------------------
@@ -410,9 +384,11 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
       double amount = 0.0;
       if (data.containsKey('amount') && data['amount'] != null) {
         amount = (data['amount'] as num).toDouble();
-      } else if (data.containsKey('totalAmount') && data['totalAmount'] != null) {
+      } else if (data.containsKey('totalAmount') &&
+          data['totalAmount'] != null) {
         amount = (data['totalAmount'] as num).toDouble();
-      } else if (data.containsKey('paymentAmount') && data['paymentAmount'] != null) {
+      } else if (data.containsKey('paymentAmount') &&
+          data['paymentAmount'] != null) {
         amount = (data['paymentAmount'] as num).toDouble();
       }
       if (orderDate != null && orderDate.isAfter(sevenDaysAgo)) {
@@ -489,10 +465,10 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
               Text(
                 "Recent Orders (Last 7 days)",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 19,
-                      fontFamily: 'Montserrat',
-                    ),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 19,
+                  fontFamily: 'Montserrat',
+                ),
               ),
               const SizedBox(height: 10),
               recentOrders.isEmpty
@@ -500,21 +476,21 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: Text(
                         "No recent orders.",
-                        style: TextStyle(color: Colors.grey[600], fontSize: 15.5),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 15.5,
+                        ),
                       ),
                     )
-                  : ModernCardList(
-                      items: recentOrders,
-                      isOrder: true,
-                    ),
+                  : ModernCardList(items: recentOrders, isOrder: true),
               const SizedBox(height: 28),
               Text(
                 "Recent Payments (Last 7 days)",
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 19,
-                      fontFamily: 'Montserrat',
-                    ),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 19,
+                  fontFamily: 'Montserrat',
+                ),
               ),
               const SizedBox(height: 10),
               recentPayments.isEmpty
@@ -522,13 +498,13 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: Text(
                         "No recent payments.",
-                        style: TextStyle(color: Colors.grey[600], fontSize: 15.5),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 15.5,
+                        ),
                       ),
                     )
-                  : ModernCardList(
-                      items: recentPayments,
-                      isOrder: false,
-                    ),
+                  : ModernCardList(items: recentPayments, isOrder: false),
             ],
           ),
         ),
@@ -546,12 +522,7 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
           icon: Icons.shopping_bag,
           gradientColors: [const Color(0xFF2193b0), const Color(0xFF6dd5ed)],
           sections: ordersEmpty
-              ? [
-                  const StatSection(
-                    label: "Total Amount",
-                    value: "No Data",
-                  ),
-                ]
+              ? [const StatSection(label: "Total Amount", value: "No Data")]
               : [
                   StatSection(
                     label: "Total Amount",
@@ -566,12 +537,7 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
           icon: Icons.attach_money,
           gradientColors: [const Color(0xFF43cea2), const Color(0xFF185a9d)],
           sections: paymentsEmpty
-              ? [
-                  const StatSection(
-                    label: "Total Amount",
-                    value: "No Data",
-                  ),
-                ]
+              ? [const StatSection(label: "Total Amount", value: "No Data")]
               : [
                   StatSection(
                     label: "Total Amount",
@@ -588,7 +554,9 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
           sections: [
             StatSection(
               label: "Due Amount",
-              value: dueAmount >= 0 ? "\$${dueAmount.toStringAsFixed(2)}" : "No Data",
+              value: dueAmount >= 0
+                  ? "\$${dueAmount.toStringAsFixed(2)}"
+                  : "No Data",
             ),
           ],
           highlightDue: dueAmount > 0,
@@ -596,7 +564,6 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
       ],
     );
   }
-
 }
 
 // ---------------------- Modern Widgets ----------------------
@@ -710,7 +677,8 @@ class StatCard extends StatelessWidget {
               const SizedBox(height: 7),
               // Subtitle (sections)
               ...sections.map((s) {
-                final isDueAmount = highlightDue && s.label.toLowerCase().contains('due');
+                final isDueAmount =
+                    highlightDue && s.label.toLowerCase().contains('due');
                 return Padding(
                   padding: const EdgeInsets.only(top: 3.5),
                   child: Row(
@@ -730,7 +698,9 @@ class StatCard extends StatelessWidget {
                         s.value,
                         style: TextStyle(
                           fontSize: 17,
-                          color: isDueAmount ? Colors.red[400] : Colors.white.withOpacity(0.99),
+                          color: isDueAmount
+                              ? Colors.red[400]
+                              : Colors.white.withOpacity(0.99),
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.21,
                           fontFamily: 'Montserrat',
@@ -772,7 +742,9 @@ class ModernCardList extends StatelessWidget {
         final dateFormatted = date != null
             ? "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}"
             : "";
-        final title = isOrder ? (item['customerName'] ?? 'Unknown') : (item['pharmacyPhone'] ?? 'Unknown');
+        final title = isOrder
+            ? (item['customerName'] ?? 'Unknown')
+            : (item['pharmacyPhone'] ?? 'Unknown');
         final trailing = "\$${(item['amount'] as num).toStringAsFixed(2)}";
         return Material(
           color: Colors.white,
@@ -826,7 +798,11 @@ class ModernCardList extends StatelessWidget {
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          Icon(Icons.calendar_today, size: 13.5, color: Colors.grey[500]),
+                          Icon(
+                            Icons.calendar_today,
+                            size: 13.5,
+                            color: Colors.grey[500],
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             dateFormatted,

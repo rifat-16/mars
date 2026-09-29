@@ -1,4 +1,4 @@
-import 'package:Mars/ui/widgets/main_app_bar.dart';
+import 'package:mars/ui/widgets/main_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'product_details_screen.dart';
@@ -33,11 +33,17 @@ class _MedicineScreenState extends State<MedicineScreen> {
                       onTap: () => setState(() => selectedCategory = category),
                       borderRadius: BorderRadius.circular(20),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           gradient: isSelected
                               ? const LinearGradient(
-                                  colors: [Color(0xFF4CAF50), Color(0xFF81C784)],
+                                  colors: [
+                                    Color(0xFF4CAF50),
+                                    Color(0xFF81C784),
+                                  ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 )
@@ -76,10 +82,14 @@ class _MedicineScreenState extends State<MedicineScreen> {
                   final docs = snapshot.data?.docs ?? [];
                   final filteredDocs = selectedCategory == 'All'
                       ? docs
-                      : docs.where((doc) => doc['category'] == selectedCategory).toList();
+                      : docs
+                            .where((doc) => doc['category'] == selectedCategory)
+                            .toList();
 
                   if (filteredDocs.isEmpty) {
-                    return const Center(child: Text('No products found for this category'));
+                    return const Center(
+                      child: Text('No products found for this category'),
+                    );
                   }
 
                   return ListView.separated(
@@ -91,7 +101,9 @@ class _MedicineScreenState extends State<MedicineScreen> {
                       final productId = doc.id;
 
                       return Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         elevation: 5,
                         shadowColor: Colors.black26,
                         child: InkWell(
@@ -99,11 +111,15 @@ class _MedicineScreenState extends State<MedicineScreen> {
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ProductDetailsScreen(productId: productId),
+                              builder: (_) =>
+                                  ProductDetailsScreen(productId: productId),
                             ),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 16,
+                            ),
                             child: Row(
                               children: [
                                 Container(
@@ -121,7 +137,8 @@ class _MedicineScreenState extends State<MedicineScreen> {
                                 const SizedBox(width: 18),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         med['name'] ?? '',
@@ -143,7 +160,11 @@ class _MedicineScreenState extends State<MedicineScreen> {
                                     ],
                                   ),
                                 ),
-                                const Icon(Icons.arrow_forward_ios, size: 20, color: Colors.grey),
+                                const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 20,
+                                  color: Colors.grey,
+                                ),
                               ],
                             ),
                           ),

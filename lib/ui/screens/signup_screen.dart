@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_routes.dart';
+
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -40,10 +42,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   width: 200,
                   height: 200,
                 ),
-                Text(
-                  'Sign Up',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                Text('Sign Up', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 20),
 
                 // First Name
@@ -54,7 +53,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     labelText: 'First Name',
                   ),
                   validator: (value) =>
-                  value!.isEmpty ? 'Please enter first name' : null,
+                      value!.isEmpty ? 'Please enter first name' : null,
                 ),
                 const SizedBox(height: 10),
 
@@ -66,7 +65,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     labelText: 'Last Name',
                   ),
                   validator: (value) =>
-                  value!.isEmpty ? 'Please enter last name' : null,
+                      value!.isEmpty ? 'Please enter last name' : null,
                 ),
                 const SizedBox(height: 10),
 
@@ -104,6 +103,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   },
                 ),
                 const SizedBox(height: 10),
+
                 // Address
                 TextFormField(
                   controller: _addressTEController,
@@ -125,9 +125,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: 'Password',
                     labelText: 'Password',
                     suffixIcon: IconButton(
-                      icon: Icon(_isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off),
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
                       onPressed: () {
                         setState(() {
                           _isPasswordVisible = !_isPasswordVisible;
@@ -154,13 +156,15 @@ class _SignupScreenState extends State<SignupScreen> {
                     hintText: 'Confirm Password',
                     labelText: 'Confirm Password',
                     suffixIcon: IconButton(
-                      icon: Icon(_isConfirmPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off),
+                      icon: Icon(
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
                       onPressed: () {
                         setState(() {
                           _isConfirmPasswordVisible =
-                          !_isConfirmPasswordVisible;
+                              !_isConfirmPasswordVisible;
                         });
                       },
                     ),
@@ -222,46 +226,61 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _onTapSignUpButton() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Firebase / API call
-      try{
+      try {
         setState(() {
           _isLoading = true;
         });
-        // 1️⃣ Firebase Auth - create user
-        UserCredential userCredential = await FirebaseAuth.instance
+        final userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(
-          email: _emailTEController.text.trim(),
-          password: _passwordTEController.text.trim(),
-        );
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredential.user!.uid).set(
-          {
-            'first_name': _firstNameTEController.text.trim(),
-            'last_name': _lastNameTEController.text.trim(),
-            'email': _emailTEController.text.trim(),
-            'phone': _phoneNumberTEController.text.trim(),
-            'address': _addressTEController.text.trim(),
-            'created_at': FieldValue.serverTimestamp(),
-          },
-        );
+              email: _emailTEController.text.trim(),
+              password: _passwordTEController.text.trim(),
+            );
+
+        final uid = userCredential.user!.uid;
+        final fullName =
+            '${_firstNameTEController.text.trim()} ${_lastNameTEController.text.trim()}'
+                .trim();
+
+        await FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'first_name': _firstNameTEController.text.trim(),
+          'last_name': _lastNameTEController.text.trim(),
+          'name': fullName,
+          'email': _emailTEController.text.trim(),
+          'phone': _phoneNumberTEController.text.trim(),
+          'address': _addressTEController.text.trim(),
+          'location': _addressTEController.text.trim(),
+          'position': 'User',
+          'createdAt': FieldValue.serverTimestamp(),
+          'created_at': FieldValue.serverTimestamp(),
+        });
+
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sign Up Successful'),
+          const SnackBar(
+            content: Text('Sign Up Successful (User)'),
             backgroundColor: Colors.green,
           ),
         );
-        Future.delayed(const Duration(seconds: 3), () {
-          Navigator.pushReplacementNamed(context, '/LoginScreen');
-        });
+        await Future<void>.delayed(const Duration(seconds: 3));
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, AppRoutes.login);
       } on FirebaseAuthException catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Sign Up Failed'),
+          SnackBar(
+            content: Text(e.message ?? 'Sign Up Failed'),
             backgroundColor: Colors.red,
           ),
         );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -278,6 +297,7 @@ class _SignupScreenState extends State<SignupScreen> {
     _firstNameTEController.dispose();
     _lastNameTEController.dispose();
     _phoneNumberTEController.dispose();
+    _addressTEController.dispose();
     super.dispose();
   }
 }

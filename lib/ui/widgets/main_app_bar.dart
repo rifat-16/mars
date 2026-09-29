@@ -37,7 +37,9 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.15),
@@ -48,7 +50,10 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12,
+              ),
               child: Row(
                 children: [
                   if (_showBackButton)
@@ -57,7 +62,11 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
                       onTap: () => Navigator.of(context).pop(),
                       child: const Padding(
                         padding: EdgeInsets.all(8.0),
-                        child: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                        child: Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
                   Icon(icon, color: Colors.white, size: 28),
@@ -96,7 +105,11 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
                       onTap: onTrailingPressed,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Icon(trailingIcon, color: Colors.white, size: 28),
+                        child: Icon(
+                          trailingIcon,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
                 ],

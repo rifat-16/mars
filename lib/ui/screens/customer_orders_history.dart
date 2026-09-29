@@ -135,7 +135,11 @@ class _PharmacyOrdersHistoryState extends State<CustomerOrdersHistory> {
                 ],
               ),
               padding: const EdgeInsets.all(14),
-              child: const Icon(Icons.local_pharmacy, color: Colors.white, size: 28),
+              child: const Icon(
+                Icons.local_pharmacy,
+                color: Colors.white,
+                size: 28,
+              ),
             ),
             const SizedBox(width: 20),
             Expanded(
@@ -154,12 +158,18 @@ class _PharmacyOrdersHistoryState extends State<CustomerOrdersHistory> {
                   const SizedBox(height: 8),
                   Text(
                     'Address: $address',
-                    style: TextStyle(fontSize: 14, color: Colors.black87.withOpacity(0.85)),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87.withOpacity(0.85),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Phone: $phone',
-                    style: TextStyle(fontSize: 14, color: Colors.black54.withOpacity(0.85)),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.black54.withOpacity(0.85),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -174,7 +184,10 @@ class _PharmacyOrdersHistoryState extends State<CustomerOrdersHistory> {
                   const SizedBox(height: 4),
                   Text(
                     'Date: $createdAt',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.withOpacity(0.75)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.withOpacity(0.75),
+                    ),
                   ),
                 ],
               ),

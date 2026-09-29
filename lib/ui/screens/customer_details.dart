@@ -1,5 +1,4 @@
-import 'package:Mars/ui/screens/customer_orders_history.dart';
-import 'package:Mars/ui/widgets/main_app_bar.dart';
+import 'package:mars/ui/widgets/main_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../service/sms_service.dart';
@@ -16,7 +15,6 @@ class CustomerDetails extends StatefulWidget {
 class _CustomerDetailsState extends State<CustomerDetails> {
   Map<String, dynamic>? pharmacyData;
   bool _isLoading = false;
-
 
   Future<double> _calculateTotalPayments(String phone) async {
     double total = 0;
@@ -87,7 +85,8 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                 }
                 if (snapshot.hasError) {
                   return Center(
-                      child: Text('Error loading data: ${snapshot.error}'));
+                    child: Text('Error loading data: ${snapshot.error}'),
+                  );
                 }
                 if (!snapshot.hasData || !snapshot.data!.exists) {
                   return const Center(child: Text('Pharmacy not found'));
@@ -178,9 +177,16 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return CustomerPaymentReceivedHistory(phoneNumber: phone);
-                      }));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return CustomerPaymentReceivedHistory(
+                              phoneNumber: phone,
+                            );
+                          },
+                        ),
+                      );
                     },
                     child: PharmacyDetailsCard(
                       title: 'Total Medicine Ordered',
@@ -190,9 +196,16 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                   ),
                   InkWell(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return CustomerPaymentReceivedHistory(phoneNumber: phone);
-                      }));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return CustomerPaymentReceivedHistory(
+                              phoneNumber: phone,
+                            );
+                          },
+                        ),
+                      );
                     },
                     child: PharmacyDetailsCard(
                       title: 'Total Payment Received',
@@ -219,7 +232,9 @@ class _CustomerDetailsState extends State<CustomerDetails> {
               // Check if SMS already sent today
               future: FirebaseFirestore.instance
                   .collection('sms_logs')
-                  .doc('${phone}_${DateTime.now().toIso8601String().substring(0,10)}')
+                  .doc(
+                    '${phone}_${DateTime.now().toIso8601String().substring(0, 10)}',
+                  )
                   .get(),
               builder: (context, snapshot) {
                 bool smsAlreadySent = false;
@@ -231,65 +246,89 @@ class _CustomerDetailsState extends State<CustomerDetails> {
                   onPressed: smsAlreadySent || _isLoading
                       ? null
                       : () async {
-                    setState(() { _isLoading = true; });
+                          setState(() {
+                            _isLoading = true;
+                          });
 
-                    try {
-                      final totalOrders = await _calculateTotalOrdersAmount(phone);
-                      final totalPayments = await _calculateTotalPayments(phone);
-                      final totalDue = totalOrders - totalPayments;
+                          try {
+                            final totalOrders =
+                                await _calculateTotalOrdersAmount(phone);
+                            final totalPayments = await _calculateTotalPayments(
+                              phone,
+                            );
+                            final totalDue = totalOrders - totalPayments;
 
-                      String smsMessage =
-                          'Hello ${pharmacyData?['name'] ?? 'Customer'}, your total due amount is ${totalDue.toStringAsFixed(2)} TK. Please pay at your earliest convenience. Thank you! (MARS Laboratories Unani) ';
+                            String smsMessage =
+                                'Hello ${pharmacyData?['name'] ?? 'Customer'}, your total due amount is ${totalDue.toStringAsFixed(2)} TK. Please pay at your earliest convenience. Thank you! (MARS Laboratories Unani) ';
 
-                      await SmsService.sendSms(number: phone, message: smsMessage);
+                            await SmsService.sendSms(
+                              number: phone,
+                              message: smsMessage,
+                            );
 
-                      // Log SMS
-                      await FirebaseFirestore.instance
-                          .collection('sms_logs')
-                          .doc('${phone}_${DateTime.now().toIso8601String().substring(0,10)}')
-                          .set({
-                        'phone': phone,
-                        'date': DateTime.now().toIso8601String(),
-                        'message': smsMessage,
-                      });
+                            // Log SMS
+                            await FirebaseFirestore.instance
+                                .collection('sms_logs')
+                                .doc(
+                                  '${phone}_${DateTime.now().toIso8601String().substring(0, 10)}',
+                                )
+                                .set({
+                                  'phone': phone,
+                                  'date': DateTime.now().toIso8601String(),
+                                  'message': smsMessage,
+                                });
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Due amount SMS sent successfully!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to send SMS: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    } finally {
-                      setState(() { _isLoading = false; });
-                    }
-                  },
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Due amount SMS sent successfully!',
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to send SMS: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } finally {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: smsAlreadySent ? Colors.grey : Colors.green,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    backgroundColor: smsAlreadySent
+                        ? Colors.grey
+                        : Colors.green,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 15,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
-                    ),
-                  )
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
                       : Text(
-                    smsAlreadySent ? 'SMS Already Sent Today' : 'Send Due SMS',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                          smsAlreadySent
+                              ? 'SMS Already Sent Today'
+                              : 'Send Due SMS',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 );
               },
             ),

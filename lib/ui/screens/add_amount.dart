@@ -57,7 +57,8 @@ class _PharmacyDetailsScreenState extends State<PharmacyDetailsScreen> {
 
       await Future.delayed(const Duration(seconds: 2));
       // Prepare SMS message
-      String smsMessage = 'Hello ${widget.pharmacy['name']}, we have received your payment of ${amount.toStringAsFixed(2)} TK via $_selectedPaymentMethod. Thank you! (MARS Laboratories Unani)';
+      String smsMessage =
+          'Hello ${widget.pharmacy['name']}, we have received your payment of ${amount.toStringAsFixed(2)} TK via $_selectedPaymentMethod. Thank you! (MARS Laboratories Unani)';
 
       // Send SMS
       await SmsService.sendSms(
@@ -65,11 +66,12 @@ class _PharmacyDetailsScreenState extends State<PharmacyDetailsScreen> {
         message: smsMessage,
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment saved successfully'),
+        const SnackBar(
+          content: Text('Payment saved successfully'),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 2),
         ),
-        );
+      );
       Navigator.pop(context);
 
       // Clear input
@@ -78,9 +80,9 @@ class _PharmacyDetailsScreenState extends State<PharmacyDetailsScreen> {
         _selectedPaymentMethod = null;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving payment: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error saving payment: $e')));
     } finally {
       setState(() {
         _isLoading = false;
@@ -119,12 +121,20 @@ class _PharmacyDetailsScreenState extends State<PharmacyDetailsScreen> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 18, color: Colors.grey),
+                        const Icon(
+                          Icons.location_on,
+                          size: 18,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            widget.pharmacy['address'] ?? 'Address not available',
-                            style: const TextStyle(fontSize: 16, color: Colors.grey),
+                            widget.pharmacy['address'] ??
+                                'Address not available',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                       ],
@@ -136,7 +146,10 @@ class _PharmacyDetailsScreenState extends State<PharmacyDetailsScreen> {
                         const SizedBox(width: 6),
                         Text(
                           widget.pharmacy['phone'] ?? 'Phone not available',
-                          style: const TextStyle(fontSize: 16, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),
@@ -150,7 +163,9 @@ class _PharmacyDetailsScreenState extends State<PharmacyDetailsScreen> {
               controller: _amountController,
               decoration: InputDecoration(
                 labelText: 'Amount',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
@@ -162,7 +177,9 @@ class _PharmacyDetailsScreenState extends State<PharmacyDetailsScreen> {
               value: _selectedPaymentMethod,
               decoration: InputDecoration(
                 labelText: 'Payment Method',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
@@ -187,7 +204,10 @@ class _PharmacyDetailsScreenState extends State<PharmacyDetailsScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 onPressed: _isLoading ? null : _submitPayment,
                 child: _isLoading

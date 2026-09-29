@@ -1,12 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
-import '../../auth/auth_controller.dart';
-import '../../auth/role_controller.dart';
-import '../../models/user_model.dart';
+import '../../core/constants/app_routes.dart';
+import '../../state/session_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,7 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordTEController = TextEditingController();
 
   bool _isPasswordVisible = false;
-  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +73,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             _isPasswordVisible = !_isPasswordVisible;
                           });
                         },
-                        icon: Icon(_isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off),
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
                       ),
                     ),
                     validator: (value) {
@@ -95,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
 
                   Visibility(
-                    visible: _isLoading == false,
+                    visible: !context.watch<SessionProvider>().state.isLoading,
                     child: ElevatedButton(
                       onPressed: _onTapLoginButton,
                       child: const Text('Login'),
@@ -140,102 +138,44 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _onForgotPasswordTextButton() {
-    Navigator.pushNamed(context, '/forgotPassword');
+    Navigator.pushNamed(context, AppRoutes.forgotPassword);
   }
 
   void _onTapSingUpText() {
-    Navigator.pushNamed(context, '/signup');
+    Navigator.pushNamed(context, AppRoutes.signup);
   }
 
   Future<void> _onTapLoginButton() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!_formKey.currentState!.validate()) return;
 
-      try {
-        UserCredential userCredential =
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailTEController.text.trim(),
-          password: _passwordTEController.text.trim(),
-        );
+    final session = context.read<SessionProvider>();
+    final success = await session.login(
+      email: _emailTEController.text.trim(),
+      password: _passwordTEController.text.trim(),
+    );
 
-        final user = userCredential.user;
-        final token = await user?.getIdToken();
+    if (!mounted) return;
 
-        if (user != null && token != null) {
-          DocumentSnapshot? userDoc;
-
-          // 🔹 Try to fetch from 'users' first
-          userDoc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .get();
-
-          // 🔹 If not found in 'users', try 'employees'
-          if (!userDoc.exists) {
-            userDoc = await FirebaseFirestore.instance
-                .collection('employees')
-                .doc(user.uid)
-                .get();
-          }
-
-          if (!userDoc.exists) {
-            throw Exception('User data not found in Firestore');
-          }
-
-          final userData = userDoc.data() as Map<String, dynamic>;
-
-          // 🔹 Create UserModel
-          final userModel = UserModel(
-            uid: user.uid,
-            email: user.email ?? '',
-            first_name: userData['first_name'] ?? userData['name'] ?? '',
-            last_name: userData['last_name'] ?? '',
-            phone: userData['phone'] ?? '',
-            position: userData['position'] ?? '',
-            address: userData['address'] ?? userData['location'] ?? '',
-          );
-
-          // 🔹 Save locally
-          await AuthController.saveUserData(userModel, token);
-
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('first_name', userData['first_name'] ?? userData['name'] ?? '');
-          await prefs.setString('last_name', userData['last_name'] ?? '');
-          await prefs.setString('address', userData['address'] ?? userData['location'] ?? '');
-          await prefs.setString('phone', userData['phone'] ?? '');
-          await prefs.setString('position', userData['position'] ?? '');
-          await prefs.setString('uid', user.uid);
-          await prefs.setString('email', user.email ?? '');
-
-
-
-          // 🔹 Navigate home
-          if (mounted) {
-            Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                duration: Duration(seconds: 1),
-                content: Text('Login Successful'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        }
-      } on FirebaseAuthException catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message ?? 'Login failed'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    if (success) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.home,
+        (route) => false,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          duration: Duration(seconds: 1),
+          content: Text('Login Successful'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      return;
     }
+
+    final message = session.state.errorMessage ?? 'Login failed';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 
   @override

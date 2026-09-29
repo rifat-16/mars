@@ -12,7 +12,19 @@ class EmployeeListScreen extends StatefulWidget {
 }
 
 class _EmployeeListScreenState extends State<EmployeeListScreen> {
-  Map<String, bool> _expandedMap = {};
+  static const Set<String> _allowedRoles = {
+    'admin',
+    'owner',
+    'am',
+    'rsm',
+    'sm',
+    'dsm',
+    'gm',
+    'manager',
+    'mpo',
+  };
+
+  final Map<String, bool> _expandedMap = {};
 
   static const Color _accentColor = Color(0xFF4CAF50); // Modern green accent
 
@@ -21,15 +33,27 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     return Scaffold(
       appBar: MainAppBar(title: 'Employee List', icon: Icons.people_alt),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('employees')
-            .orderBy('createdAt', descending: true)
-            .snapshots(),
+        stream: FirebaseFirestore.instance.collection('employees').snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          if (snapshot.data!.docs.isEmpty) return const Center(child: Text("No employees found"));
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final employees =
+              snapshot.data!.docs.where((doc) {
+                final data = doc.data()! as Map<String, dynamic>;
+                final role = (data['position'] ?? '').toString().toLowerCase();
+                return _allowedRoles.contains(role);
+              }).toList()..sort((a, b) {
+                final aData = a.data()! as Map<String, dynamic>;
+                final bData = b.data()! as Map<String, dynamic>;
+                final aCreatedAt = _readCreatedAt(aData);
+                final bCreatedAt = _readCreatedAt(bData);
+                return bCreatedAt.compareTo(aCreatedAt);
+              });
 
-          final employees = snapshot.data!.docs;
+          if (employees.isEmpty) {
+            return const Center(child: Text("No employees found"));
+          }
 
           return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
@@ -40,11 +64,16 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
               final isExpanded = _expandedMap[emp.id] ?? false;
 
               return Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
                 elevation: 3,
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -52,34 +81,48 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                         contentPadding: EdgeInsets.zero,
                         leading: CircleAvatar(
                           radius: 28,
-                          backgroundColor: _accentColor.withOpacity(0.15),
+                          backgroundColor: _accentColor.withValues(alpha: 0.15),
                           child: Text(
-                            data['name'][0].toUpperCase(),
+                            ((data['name'] ?? '?').toString().isNotEmpty
+                                    ? data['name'].toString()[0]
+                                    : '?')
+                                .toUpperCase(),
                             style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 20,
-                                letterSpacing: 1.2,
-                                color: _accentColor),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 20,
+                              letterSpacing: 1.2,
+                              color: _accentColor,
+                            ),
                           ),
                         ),
                         title: Text(
                           data['name'],
                           style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 20, color: Colors.black87),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                            color: Colors.black87,
+                          ),
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             data['position'],
                             style: const TextStyle(
-                                fontSize: 15, color: Colors.black54, fontWeight: FontWeight.w500),
+                              fontSize: 15,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                         trailing: AnimatedRotation(
                           turns: isExpanded ? 0.5 : 0,
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOutCubic,
-                          child: Icon(Icons.keyboard_arrow_down_rounded, color: _accentColor, size: 32),
+                          child: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: _accentColor,
+                            size: 32,
+                          ),
                         ),
                         onTap: () {
                           setState(() {
@@ -92,7 +135,12 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                         curve: Curves.easeInOutCubic,
                         child: isExpanded
                             ? Padding(
-                                padding: const EdgeInsets.fromLTRB(0, 12, 0, 14),
+                                padding: const EdgeInsets.fromLTRB(
+                                  0,
+                                  12,
+                                  0,
+                                  14,
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -105,14 +153,25 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         IconButton(
-                                          onPressed: () => _editEmployee(emp.id),
-                                          icon: Icon(Icons.edit_rounded, color: _accentColor, size: 28),
+                                          onPressed: () =>
+                                              _editEmployee(emp.id),
+                                          icon: Icon(
+                                            Icons.edit_rounded,
+                                            color: _accentColor,
+                                            size: 28,
+                                          ),
                                           tooltip: 'Edit Employee',
                                         ),
                                         IconButton(
-                                          onPressed: () => _confirmDelete(emp.id),
-                                          icon: Icon(Icons.delete_outline_rounded,
-                                              color: _accentColor.withOpacity(0.7), size: 28),
+                                          onPressed: () =>
+                                              _confirmDelete(emp.id),
+                                          icon: Icon(
+                                            Icons.delete_outline_rounded,
+                                            color: _accentColor.withValues(
+                                              alpha: 0.7,
+                                            ),
+                                            size: 28,
+                                          ),
                                           tooltip: 'Delete Employee',
                                         ),
                                       ],
@@ -132,12 +191,26 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const AddEmployeeScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddEmployeeScreen()),
+          );
         },
         backgroundColor: _accentColor,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
+  }
+
+  DateTime _readCreatedAt(Map<String, dynamic> data) {
+    final raw = data['createdAt'] ?? data['created_at'];
+    if (raw is Timestamp) {
+      return raw.toDate();
+    }
+    if (raw is DateTime) {
+      return raw;
+    }
+    return DateTime.fromMillisecondsSinceEpoch(0);
   }
 
   Widget _infoRow(String label, String? value) {
@@ -149,14 +222,22 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
           Text(
             '$label:',
             style: const TextStyle(
-                fontWeight: FontWeight.w700, fontSize: 15, color: Colors.black87, letterSpacing: 0.4),
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+              color: Colors.black87,
+              letterSpacing: 0.4,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               value ?? 'N/A',
               style: const TextStyle(
-                  fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black54, letterSpacing: 0.2),
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                color: Colors.black54,
+                letterSpacing: 0.2,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -179,7 +260,10 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
             const Text('Confirm Delete'),
           ],
         ),
-        content: const Text('Are you sure you want to delete this employee?', style: TextStyle(fontSize: 16)),
+        content: const Text(
+          'Are you sure you want to delete this employee?',
+          style: TextStyle(fontSize: 16),
+        ),
         actionsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         actions: [
           TextButton(
@@ -187,7 +271,9 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
             style: TextButton.styleFrom(
               foregroundColor: Colors.black87,
               textStyle: const TextStyle(fontWeight: FontWeight.w500),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text('Cancel'),
           ),
@@ -199,7 +285,9 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: _accentColor,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
               elevation: 0,
               textStyle: const TextStyle(fontWeight: FontWeight.w600),
             ),
@@ -212,14 +300,19 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
 
   void _deleteEmployee(String employeeId) async {
     try {
-      await FirebaseFirestore.instance.collection('employees').doc(employeeId).delete();
+      await FirebaseFirestore.instance
+          .collection('employees')
+          .doc(employeeId)
+          .delete();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Employee deleted successfully'),
             backgroundColor: _accentColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           ),
         );
@@ -231,7 +324,9 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
             content: Text('Failed to delete employee: $e'),
             backgroundColor: Colors.red.shade400,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           ),
         );
@@ -242,7 +337,9 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   void _editEmployee(String employeeId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => EditEmployeeScreen(employeeId: employeeId)),
+      MaterialPageRoute(
+        builder: (_) => EditEmployeeScreen(employeeId: employeeId),
+      ),
     );
   }
 }

@@ -11,9 +11,15 @@ class ProductDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MainAppBar(title: "Medicine Details", icon: Icons.medical_information),
+      appBar: MainAppBar(
+        title: "Medicine Details",
+        icon: Icons.medical_information,
+      ),
       body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance.collection("medicines").doc(productId).get(),
+        future: FirebaseFirestore.instance
+            .collection("medicines")
+            .doc(productId)
+            .get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -45,7 +51,8 @@ class ProductDetailsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Product Image Section
-                if (data["imageUrl"] != null && data["imageUrl"].toString().isNotEmpty)
+                if (data["imageUrl"] != null &&
+                    data["imageUrl"].toString().isNotEmpty)
                   Center(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
@@ -65,7 +72,11 @@ class ProductDetailsScreen extends StatelessWidget {
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.image_not_supported, size: 80, color: Colors.grey),
+                    child: const Icon(
+                      Icons.image_not_supported,
+                      size: 80,
+                      color: Colors.grey,
+                    ),
                   ),
 
                 const SizedBox(height: 16),
@@ -73,7 +84,10 @@ class ProductDetailsScreen extends StatelessWidget {
                 // Name and Subtitle
                 Text(
                   data["name"] ?? "Unnamed Product",
-                  style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -90,7 +104,10 @@ class ProductDetailsScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       data["category"] ?? "Uncategorized",
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -100,13 +117,19 @@ class ProductDetailsScreen extends StatelessWidget {
 
                 // Dosage
                 _buildSectionTitle("Dosage"),
-                Text(data["dosage"] ?? "Not specified", style: const TextStyle(fontSize: 16)),
+                Text(
+                  data["dosage"] ?? "Not specified",
+                  style: const TextStyle(fontSize: 16),
+                ),
 
                 const SizedBox(height: 16),
 
                 // Efficiency
                 _buildSectionTitle("Efficiency"),
-                Text(data["efficiency"] ?? "Not specified", style: const TextStyle(fontSize: 16)),
+                Text(
+                  data["efficiency"] ?? "Not specified",
+                  style: const TextStyle(fontSize: 16),
+                ),
 
                 const SizedBox(height: 16),
 
@@ -146,8 +169,13 @@ class ProductDetailsScreen extends StatelessWidget {
                 Center(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 36,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       backgroundColor: Colors.green, // fallback gradient color
                       elevation: 6,
                       shadowColor: Colors.greenAccent.withOpacity(0.5),
@@ -160,7 +188,10 @@ class ProductDetailsScreen extends StatelessWidget {
                     icon: const Icon(Icons.shopping_cart, size: 22),
                     label: const Text(
                       "Add to Cart",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -199,10 +230,7 @@ class ProductDetailsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                color.withOpacity(0.6),
-                color,
-              ],
+              colors: [color.withOpacity(0.6), color],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -210,10 +238,19 @@ class ProductDetailsScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Text(title,
-                  style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+              Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+              ),
               const SizedBox(height: 8),
-              Text("$price ৳", style: TextStyle(fontSize: 20, color: textColor, fontWeight: FontWeight.w600)),
+              Text(
+                "$price ৳",
+                style: TextStyle(
+                  fontSize: 20,
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),

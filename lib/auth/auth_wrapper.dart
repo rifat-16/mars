@@ -1,40 +1,29 @@
 import 'package:flutter/material.dart';
-import '../auth/auth_controller.dart';
+import 'package:provider/provider.dart';
+
+import '../state/session_provider.dart';
 import '../ui/screens/home_screen.dart';
 import '../ui/screens/login_screen.dart';
 
-class AuthWrapper extends StatefulWidget {
+class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
   @override
-  State<AuthWrapper> createState() => _AuthWrapperState();
-}
-
-class _AuthWrapperState extends State<AuthWrapper> {
-  bool _isLoggedIn = false;
-  bool _loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkLogin();
-  }
-
-  void _checkLogin() async {
-    bool loggedIn = await AuthController.isLoggedIn();
-    setState(() {
-      _isLoggedIn = loggedIn;
-      _loading = false;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-    return _isLoggedIn ? const HomeScreen() : const LoginScreen();
+    return Consumer<SessionProvider>(
+      builder: (context, session, _) {
+        if (session.state.isLoading || session.state.isIdle) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (session.isAuthenticated) {
+          return const HomeScreen();
+        }
+
+        return const LoginScreen();
+      },
+    );
   }
 }

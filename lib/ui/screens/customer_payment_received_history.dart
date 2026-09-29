@@ -1,4 +1,4 @@
-import 'package:Mars/ui/widgets/main_app_bar.dart';
+import 'package:mars/ui/widgets/main_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -7,10 +7,12 @@ class CustomerPaymentReceivedHistory extends StatefulWidget {
   const CustomerPaymentReceivedHistory({super.key, required this.phoneNumber});
 
   @override
-  State<CustomerPaymentReceivedHistory> createState() => _CustomerPaymentReceivedHistoryState();
+  State<CustomerPaymentReceivedHistory> createState() =>
+      _CustomerPaymentReceivedHistoryState();
 }
 
-class _CustomerPaymentReceivedHistoryState extends State<CustomerPaymentReceivedHistory> {
+class _CustomerPaymentReceivedHistoryState
+    extends State<CustomerPaymentReceivedHistory> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late Future<void> _refreshFuture;
   int? _tappedIndex;
@@ -56,8 +58,11 @@ class _CustomerPaymentReceivedHistoryState extends State<CustomerPaymentReceived
               itemCount: payments.length,
               itemBuilder: (context, index) {
                 final payment = payments[index].data() as Map<String, dynamic>;
-                final pharmacyName = payment['pharmacyName'] ?? 'Unknown Pharmacy';
-                final amount = payment['amount'] != null ? payment['amount'].toString() : 'N/A';
+                final pharmacyName =
+                    payment['pharmacyName'] ?? 'Unknown Pharmacy';
+                final amount = payment['amount'] != null
+                    ? payment['amount'].toString()
+                    : 'N/A';
                 final paymentMethod = payment['paymentMethod'] ?? 'N/A';
                 final timestamp = payment['timestamp'] != null
                     ? (payment['timestamp'] as Timestamp).toDate()

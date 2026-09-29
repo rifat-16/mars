@@ -1,47 +1,26 @@
-import 'package:Mars/ui/widgets/main_app_bar.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
-import '../../auth/auth_controller.dart';
-import 'login_screen.dart';
+import '../../core/constants/app_routes.dart';
+import '../../state/session_provider.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  String _firstName = '';
-  String _lastName = '';
-  String _email = '';
-  String _phone = '';
-  String _address = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _getProfileData();
-  }
-
-  Future<void> _getProfileData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _firstName = prefs.getString('first_name') ?? '';
-      _lastName = prefs.getString('last_name') ?? '';
-      _email = prefs.getString('email') ?? '';
-      _phone = prefs.getString('phone') ?? '';
-      _address = prefs.getString('address') ?? '';
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final Color primaryGreen = const Color(0xFF2E7D32);
-    final Color lightGreen = const Color(0xFF81C784);
-    final Color backgroundGray = const Color(0xFFF5F7FA);
+    final session = context.watch<SessionProvider>();
+    final user = session.currentUser;
+
+    final firstName = user?.firstName ?? '';
+    final lastName = user?.lastName ?? '';
+    final email = user?.email ?? '';
+    final phone = user?.phone ?? '';
+    final address = user?.address ?? '';
+
+    final primaryGreen = const Color(0xFF2E7D32);
+    final lightGreen = const Color(0xFF81C784);
+    final backgroundGray = const Color(0xFFF5F7FA);
 
     return Scaffold(
       backgroundColor: backgroundGray,
@@ -52,10 +31,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2E7D32)),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        title: Text(
+        title: const Text(
           'Profile',
           style: TextStyle(
-            color: const Color(0xFF2E7D32),
+            color: Color(0xFF2E7D32),
             fontWeight: FontWeight.bold,
             fontSize: 22,
           ),
@@ -86,7 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: primaryGreen.withOpacity(0.3),
+                    color: primaryGreen.withValues(alpha: 0.3),
                     offset: const Offset(0, 4),
                     blurRadius: 8,
                   ),
@@ -98,14 +77,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CircleAvatar(
                     radius: 56,
                     backgroundColor: Colors.white,
-                    child: CircleAvatar(
+                    child: const CircleAvatar(
                       radius: 52,
-                      backgroundImage: const AssetImage("assets/images/logo-removebg-preview.png"),
+                      backgroundImage: AssetImage(
+                        'assets/images/logo-removebg-preview.png',
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    '$_firstName $_lastName',
+                    '$firstName $lastName',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 26,
@@ -115,75 +96,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    _email,
+                    email,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: primaryGreen,
-                      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 12),
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      shadowColor: primaryGreen.withOpacity(0.3),
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                    child: const Text("Edit Profile"),
                   ),
                 ],
               ),
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 24,
+                ),
                 child: Column(
                   children: [
                     _buildProfileCard(
                       icon: Icons.phone,
-                      title: "Phone",
-                      subtitle: _phone,
+                      title: 'Phone',
+                      subtitle: phone,
                       primaryGreen: primaryGreen,
                     ),
                     _buildProfileCard(
                       icon: Icons.location_on,
-                      title: "Address",
-                      subtitle: _address,
+                      title: 'Address',
+                      subtitle: address,
                       primaryGreen: primaryGreen,
                     ),
                     _buildProfileCard(
                       icon: Icons.logout,
-                      title: "Logout",
-                      subtitle: "Sign out from the app",
+                      title: 'Logout',
+                      subtitle: 'Sign out from the app',
                       primaryGreen: primaryGreen,
                       onTap: () async {
-                        try {
-                          await FirebaseAuth.instance.signOut();
-                          await AuthController.logout();
-                          if (!mounted) return;
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (context) => const LoginScreen()),
-                            (route) => false,
-                          );
-                        } catch (e) {
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Logout failed: ${e.toString()}'),
-                              backgroundColor: Colors.redAccent,
-                            ),
-                          );
-                        }
+                        await context.read<SessionProvider>().logout();
+                        if (!context.mounted) return;
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          AppRoutes.login,
+                          (route) => false,
+                        );
                       },
                     ),
                   ],
@@ -206,17 +161,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       elevation: 6,
-      shadowColor: primaryGreen.withOpacity(0.15),
+      shadowColor: primaryGreen.withValues(alpha: 0.15),
       margin: const EdgeInsets.symmetric(vertical: 10),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 14,
+        ),
         leading: Icon(icon, color: primaryGreen, size: 28),
         title: Text(
           title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
         ),
         subtitle: Text(
           subtitle,

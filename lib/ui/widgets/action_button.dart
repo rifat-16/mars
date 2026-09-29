@@ -43,9 +43,10 @@ class ActionButton extends StatelessWidget {
               title.trim(),
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

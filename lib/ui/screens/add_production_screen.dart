@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 
 import '../widgets/main_app_bar.dart';
 
-
 class AddProductionScreen extends StatefulWidget {
   const AddProductionScreen({super.key});
 
@@ -51,16 +50,24 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
           .get();
 
       setState(() {
-        products = Map.fromEntries(snapshot.docs.map((doc) {
-          final data = doc.data();
-          // Handle different possible field names
-          final name = data['name'] ??
-              data['medicineName'] ??
-              data['productName'] ??
-              '';
-          final tpPrice = data['TP'] ?? data['tp'] ?? 0;
-          return MapEntry(name.toString(), (tpPrice is num) ? tpPrice.toDouble() : 0.0);
-        }).where((entry) => entry.key.isNotEmpty));
+        products = Map.fromEntries(
+          snapshot.docs
+              .map((doc) {
+                final data = doc.data();
+                // Handle different possible field names
+                final name =
+                    data['name'] ??
+                    data['medicineName'] ??
+                    data['productName'] ??
+                    '';
+                final tpPrice = data['TP'] ?? data['tp'] ?? 0;
+                return MapEntry(
+                  name.toString(),
+                  (tpPrice is num) ? tpPrice.toDouble() : 0.0,
+                );
+              })
+              .where((entry) => entry.key.isNotEmpty),
+        );
       });
     } catch (e) {
       print('Error fetching medicines: $e');
@@ -70,7 +77,10 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MainAppBar(title: 'Add Production', icon: Icons.production_quantity_limits),
+      appBar: MainAppBar(
+        title: 'Add Production',
+        icon: Icons.production_quantity_limits,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -102,17 +112,17 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
                   labelText: 'Select Product',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) =>
-                value == null || value.isEmpty ? 'Please select a product' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please select a product'
+                    : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 items: _categories
-                    .map((cat) => DropdownMenuItem(
-                  value: cat,
-                  child: Text(cat),
-                ))
+                    .map(
+                      (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
+                    )
                     .toList(),
                 onChanged: (value) {
                   setState(() {
@@ -123,8 +133,9 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
                   labelText: 'Select Category',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) =>
-                value == null || value.isEmpty ? 'Please select a category' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please select a category'
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -136,7 +147,8 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Enter quantity';
-                  if (int.tryParse(value) == null) return 'Enter a valid number';
+                  if (int.tryParse(value) == null)
+                    return 'Enter a valid number';
                   return null;
                 },
               ),
@@ -157,15 +169,16 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
               const SizedBox(height: 24),
               Visibility(
                 visible: _isSaving == false,
-                replacement: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                replacement: const Center(child: CircularProgressIndicator()),
                 child: ElevatedButton(
                   onPressed: _onTabAddProduction,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Add Production', style: TextStyle(fontSize: 16)),
+                  child: const Text(
+                    'Add Production',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
               ),
             ],
@@ -231,9 +244,9 @@ class _AddProductionScreenState extends State<AddProductionScreen> {
         );
       } catch (e) {
         setState(() => _isSaving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add production: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to add production: $e')));
       }
     }
   }

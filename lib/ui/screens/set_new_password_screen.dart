@@ -65,7 +65,7 @@ class _SetNewPasswordScreenState extends State<SetNewPasswordScreen> {
                       onPressed: () {
                         setState(() {
                           _isConfirmPasswordVisible =
-                          !_isConfirmPasswordVisible;
+                              !_isConfirmPasswordVisible;
                         });
                       },
                       icon: Icon(

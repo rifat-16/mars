@@ -13,7 +13,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailTEController = TextEditingController();
   bool _isLoding = false;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,15 +24,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 100),
-                Text('Note: Check email in your spam box!',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 20,
-                  ),
+                Text(
+                  'Note: Check email in your spam box!',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 20),
                 ),
                 const SizedBox(height: 100),
-                Text('Forgot Password',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Forgot Password',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _emailTEController,
@@ -74,12 +73,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         setState(() {
           _isLoding = true;
         });
-        await FirebaseAuth.instance
-            .sendPasswordResetEmail(email: _emailTEController.text.trim());
-        Future.delayed(const Duration(seconds: 1)
-            ).then((value) => Navigator.pop(context));
+        await FirebaseAuth.instance.sendPasswordResetEmail(
+          email: _emailTEController.text.trim(),
+        );
+        Future.delayed(
+          const Duration(seconds: 1),
+        ).then((value) => Navigator.pop(context));
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password reset email sent successfully! Please check your email.'),
+          const SnackBar(
+            content: Text(
+              'Password reset email sent successfully! Please check your email.',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -87,9 +91,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _isLoding = false;
         });
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     }
   }

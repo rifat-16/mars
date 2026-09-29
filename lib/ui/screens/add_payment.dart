@@ -25,10 +25,14 @@ class _AddPaymentState extends State<AddPayment> {
     setState(() => _isLoading = true);
     try {
       // Fetch data from 'orders' collection
-      final querySnapshot = await FirebaseFirestore.instance.collection('orders').get();
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .get();
 
       // Map data to a list
-      final List<Map<String, dynamic>> ordersData = querySnapshot.docs.map((doc) {
+      final List<Map<String, dynamic>> ordersData = querySnapshot.docs.map((
+        doc,
+      ) {
         return {
           'name': doc['customerName'] ?? 'Unnamed Pharmacy',
           'address': doc['address'] ?? 'Location not available',
@@ -51,9 +55,9 @@ class _AddPaymentState extends State<AddPayment> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to fetch orders: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to fetch orders: $e')));
     }
   }
 
@@ -76,41 +80,41 @@ class _AddPaymentState extends State<AddPayment> {
           : _pharmacies.isEmpty
           ? const Center(child: Text('No pharmacies found'))
           : RefreshIndicator(
-        onRefresh: _fetchPharmacies,
-        child: ListView.builder(
-          itemCount: _pharmacies.length,
-          itemBuilder: (context, index) {
-            final pharmacy = _pharmacies[index];
-            return InkWell(
-              onTap: () => _navigateToPharmacyDetailsScreen(pharmacy),
-              child: Card(
-                margin: const EdgeInsets.all(8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 3,
-                child: ListTile(
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.local_pharmacy),
-                  ),
-                  title: Text(
-                    pharmacy['name'] ?? 'Unnamed Pharmacy',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+              onRefresh: _fetchPharmacies,
+              child: ListView.builder(
+                itemCount: _pharmacies.length,
+                itemBuilder: (context, index) {
+                  final pharmacy = _pharmacies[index];
+                  return InkWell(
+                    onTap: () => _navigateToPharmacyDetailsScreen(pharmacy),
+                    child: Card(
+                      margin: const EdgeInsets.all(8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 3,
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.local_pharmacy),
+                        ),
+                        title: Text(
+                          pharmacy['name'] ?? 'Unnamed Pharmacy',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Text(
+                          pharmacy['address'] ?? 'Location not available',
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    pharmacy['address'] ?? 'Location not available',
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 18),
-                ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ),
+            ),
     );
   }
 }
